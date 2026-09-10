@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: metrology-scanner-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: metrology-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: METROLOGY_DATA_DIR
+        value: /data
+      - key: TESSERACT_LANG
+        value: eng

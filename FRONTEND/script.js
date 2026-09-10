@@ -8,9 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------------
   // 1. ACTIVE MULTI-ORIGIN PROBING ENGINE (Solves Localhost & Offline Errors)
   // -------------------------------------------------------------
-  let API_BASE = window.METROLOGY_API_URL || (window.location.port === "8000" || window.location.protocol === "https:") 
-    ? window.location.origin 
-    : "http://" + (window.location.hostname || "127.0.0.1") + ":8000";
+  let API_BASE = window.METROLOGY_API_URL || (
+    window.location.port === "8000" || window.location.protocol === "https:"
+      ? window.location.origin
+      : "http://" + (window.location.hostname || "127.0.0.1") + ":8000"
+  );
+  document.querySelectorAll('a[href^="http://127.0.0.1:8000"]').forEach(link => {
+    link.href = API_BASE + new URL(link.href).pathname;
+  });
 
   async function resolveActiveBackend() {
     const port = "8000";
@@ -571,6 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFile = null;
   let selectedFiles = [];
   let scanning = false;
+  let backendOnline = false;
   let currentImage = new Image();
   let activeLanguage = "en";
   let videoStream = null;
@@ -1131,7 +1137,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!chatMessages) return;
     const m = document.createElement("div");
     m.className = "chat-msg " + sender;
-    m.innerHTML = htmlText;
+    if (sender === "user") m.textContent = htmlText;
+    else m.innerHTML = htmlText;
     chatMessages.appendChild(m);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
@@ -1161,51 +1168,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("[AI ADVISOR] Local fallback active:", e);
     }
 
-    // 2. Intelligent offline fallback with scenarios & statutory citations
-    const q = raw.toLowerCase();
-    setTimeout(() => {
-      if (q.indexOf("hi") !== -1 || q.indexOf("hello") !== -1 || q.indexOf("hey") !== -1 || q.indexOf("namaste") !== -1) {
-        appendChat("ai", "Hello there! 👋 I am your <strong>Legal Metrology AI Advisor</strong>.<br><br>" +
-          "You can ask me about:<br>" +
-          "• <strong>Packaging Scenarios</strong> (Dual pricing at airports, cooling charges, price stickers)<br>" +
-          "• <strong>Statutory PCR 2011 Rules</strong> (MRP, Net Qty in SI units, Unit Sale Price Rule 6(11))<br>" +
-          "• <strong>Section 36 Penalties</strong> (Fines up to ₹25,000 for 1st offense)<br>" +
-          "• <strong>Filing Disputes</strong> via National Consumer Helpline (NCH 1915).");
-      } else if (q.indexOf("cool") !== -1 || q.indexOf("airport") !== -1 || q.indexOf("mall") !== -1 || q.indexOf("overcharge") !== -1 || q.indexOf("higher price") !== -1) {
-        appendChat("ai", "<strong>Statutory Scenario Assessment: Overcharging & Cooling Charges</strong><br><br>" +
-          "Charging even ₹1 above the printed MRP—whether for 'refrigeration/chilling' or at airports/malls—is strictly illegal under <strong>Section 36(3)</strong> of the Legal Metrology Act, 2009 & Rule 18(2) of PCR 2011.<br><br>" +
-          "<em>Penalties:</em> Fine up to ₹25,000 for 1st offense, ₹50,000 for 2nd offense.<br>" +
-          "<em>Remedy:</em> Demand the printed MRP or report immediately to the <strong>National Consumer Helpline at 1915</strong>.");
-      } else if (q.indexOf("sticker") !== -1 || q.indexOf("smudge") !== -1 || q.indexOf("pasted") !== -1 || q.indexOf("tamper") !== -1) {
-        appendChat("ai", "<strong>Statutory Scenario Assessment: Alteration via Price Stickers</strong><br><br>" +
-          "Pasting stickers over the original printed MRP or packing date to alter the price is prohibited under <strong>Rule 6</strong> unless authorized by a central notification.<br><br>" +
-          "<em>Enforcement Action:</em> Such packaging is non-compliant and liable for seizure by Legal Metrology Controllers under Section 15.");
-      } else if (q.indexOf("usp") !== -1 || q.indexOf("unit sale price") !== -1 || q.indexOf("proviso") !== -1 || q.indexOf("exemption") !== -1 || q.indexOf("1 kg") !== -1 || q.indexOf("1 l") !== -1) {
-        appendChat("ai", "<strong>Rule 6(11) Unit Sale Price Standard & Statutory Exemptions:</strong><br><br>" +
-          "• For packages < 1 kg or < 1 L, USP must be printed in <strong>₹ per g</strong> or <strong>₹ per ml</strong>.<br>" +
-          "• For packages > 1 kg or > 1 L, USP must be printed in <strong>₹ per kg</strong> or <strong>₹ per L</strong>.<br>" +
-          "• <em>Second Proviso Exemption:</em> On packages containing exactly <strong>1 kg, 1 L, or 1 unit</strong>, declaring a separate USP is not mandatory since MRP equals the Unit Price.<br>" +
-          "• <em>Rule 26 Small Pack Exemption:</em> Packages with net quantity <= 10 g or <= 10 ml are exempt from retail declarations.");
-      } else if (q.indexOf("penalty") !== -1 || q.indexOf("fine") !== -1 || q.indexOf("jail") !== -1 || q.indexOf("section 36") !== -1) {
-        appendChat("ai", "<strong>Penalties under Legal Metrology Act, 2009:</strong><br><br>" +
-          "• <strong>Section 36(1) (Non-standard Declarations):</strong> Fine up to ₹25,000 (1st offense); ₹50,000 (2nd offense); up to ₹1,00,000 or imprisonment up to 1 year for subsequent offenses.<br>" +
-          "• <strong>Section 36(3) (Overcharging over MRP):</strong> Fine up to ₹25,000 (1st offense); up to ₹50,000 (2nd offense).<br>" +
-          "• <strong>Section 29 (Non-SI Metric Units like 'gm', 'ltr'):</strong> Fine up to ₹10,000.");
-      } else if (q.indexOf("contact") !== -1 || q.indexOf("helpline") !== -1 || q.indexOf("1915") !== -1 || q.indexOf("complaint") !== -1) {
-        appendChat("ai", "<strong>Official Consumer Redressal Escalation Channels:</strong><br><br>" +
-          "📞 <strong>National Consumer Helpline (NCH):</strong><br>" +
-          "• Toll-Free: <strong>1915</strong> or <strong>1800-11-4000</strong> (8 AM to 8 PM, all days)<br>" +
-          "• SMS Support: <strong>8800001915</strong><br>" +
-          "• Portal: <a href='https://consumerhelpline.gov.in/' target='_blank' style='color: #0284c7;'>consumerhelpline.gov.in</a><br><br>" +
-          "🏛️ <strong>Department of Consumer Affairs:</strong><br>" +
-          "• Legal Metrology Portal: <a href='https://lm.doca.gov.in/' target='_blank' style='color: #0284c7;'>lm.doca.gov.in</a><br>" +
-          "• Enforcement Email: <strong>enforcement@doca.gov.in</strong>");
-      } else {
-        appendChat("ai", "I can assist you with retail packaging compliance under the <strong>Legal Metrology (Packaged Commodities) Rules, 2011</strong>.<br><br>" +
-          "Ask about specific rules (Rule 6 declarations, Rule 7 Table II font heights, Rule 6(11) USP exemptions) or real packaging scenarios (overcharging, sticky labels).<br><br>" +
-          "For unresolved disputes, contact the <strong>National Consumer Helpline at toll-free 1915</strong>.");
-      }
-    }, 200);
+    appendChat("ai", "The advisor service is unavailable. Please retry when the backend is online.");
   }
 
   if (chatSendBtn) chatSendBtn.addEventListener("click", handleConversationalAI);
@@ -1275,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleFile(f) {
     if (!f.type.startsWith("image/")) return alert("Upload a valid packaging image.");
     selectedFile = f;
-    if (scanButton) scanButton.disabled = false;
+    if (scanButton) scanButton.disabled = !backendOnline;
     updateStatusBar("Attached: " + f.name + " (" + (f.size / 1024).toFixed(1) + " KB)");
 
     const r = new FileReader();
@@ -1334,7 +1297,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.toBlob((blob) => {
         if (!blob) return;
         handleFiles([new File([blob], "camera_" + Date.now() + ".jpg", { type: "image/jpeg" })]);
-        if (scanButton) scanButton.disabled = false;
+        if (scanButton) scanButton.disabled = !backendOnline;
         updateStatusBar("Frame captured and ready for verification.");
       }, "image/jpeg");
 
@@ -1348,6 +1311,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (scanButton) {
     scanButton.addEventListener("click", async () => {
       if (!selectedFiles.length || scanning) return;
+      if (!backendOnline) return updateStatusBar("Scanner backend unavailable. Please wait for the Online indicator.");
       scanning = true;
       renderPhotoList();
 
@@ -1453,7 +1417,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } finally {
         scanning = false;
         renderPhotoList();
-        scanButton.disabled = !selectedFiles.length;
+        scanButton.disabled = !selectedFiles.length || !backendOnline;
       }
     });
   }
@@ -1520,7 +1484,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.drawImage(currentImage, 0, 0);
         }
         if (scanButton) {
-          scanButton.disabled = false;
+          scanButton.disabled = !backendOnline;
           updateStatusBar("Preset loaded: " + cfg.filename + ". Analyzing...");
           scanButton.click();
         }
@@ -1569,9 +1533,8 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const res = await fetch(API_BASE + "/api/complaints/dispatch", { method: "POST", body: fd });
         const resData = await res.json();
-        currentSession.complaintsCount++;
-        updateMetrics();
-        alert("✔ Notice Successfully Dispatched!\nReference Token: " + resData.reference_id + "\nRecipient: " + resData.contact + "\nAuthority Tier: " + resData.target);
+        if (!res.ok) throw new Error(resData.error || "Could not prepare the draft");
+        alert(resData.message + "\nDraft reference: " + resData.reference_id);
         if (dispatchNoticeModal) dispatchNoticeModal.style.display = "none";
         if (fileComplaintBtn) fileComplaintBtn.style.display = "none";
       } catch (err) {
@@ -1781,6 +1744,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const healthUrl = (API_BASE || window.location.origin || "http://127.0.0.1:8000") + "/api/v1/health";
       const res = await fetch(healthUrl, { method: "GET" });
       if (res.ok) {
+        backendOnline = true;
+        if (scanButton && !scanning) scanButton.disabled = !selectedFiles.length;
         if (pill) {
           pill.textContent = "● Backend: Online";
           pill.style.color = "#16a34a";
@@ -1791,8 +1756,10 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("Backend responded with non-200");
       }
     } catch (e) {
+      backendOnline = false;
+      if (scanButton) scanButton.disabled = true;
       if (pill) {
-        pill.textContent = "○ Backend: Standby";
+        pill.textContent = "○ Backend: Unavailable";
         pill.style.color = "#f59e0b";
         pill.style.borderColor = "rgba(245, 158, 11, 0.3)";
         pill.style.background = "rgba(245, 158, 11, 0.12)";

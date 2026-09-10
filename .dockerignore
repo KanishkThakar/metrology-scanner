@@ -1,0 +1,11 @@
+.git
+.venv
+work
+.vercel
+dist
+**/__pycache__
+**/models
+**/uploads
+**/reports
+**/*.db*
+.env*

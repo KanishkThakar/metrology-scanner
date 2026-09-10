@@ -363,10 +363,11 @@
   <div class="modal-overlay" id="dispatchNoticeModal" style="display: none;">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Report Non-Compliance</h3>
+        <h3>Prepare a Complaint Draft</h3>
         <button class="close-modal" id="closeDispatchModal">&times;</button>
       </div>
       <form id="dispatchForm" class="modal-body">
+        <p>This prepares a draft only. No email or official complaint is sent. Submit your report through <a href="https://consumerhelpline.gov.in/" target="_blank" rel="noopener">National Consumer Helpline</a>.</p>
         <label>Select Authority</label>
         <select class="control-select w-100" id="dispatchTargetSelect">
           <option value="LOCAL_BODY">District Consumer Protection Council / Local Controller</option>
@@ -375,7 +376,7 @@
         </select>
         <label>Authority or Manufacturer Contact Email</label>
         <input type="email" id="dispatchContactInput" value="enforcement@doca.gov.in" required />
-        <button type="submit" class="btn-primary w-100 mt-3">Transmit Evidence Dossier</button>
+        <button type="submit" class="btn-primary w-100 mt-3">Prepare Complaint Draft</button>
       </form>
     </div>
   </div>
@@ -397,7 +398,7 @@
   <div class="ai-widget-container">
     <div class="ai-chat-window" id="aiChatWindow" style="display: none;">
       <div class="chat-header">
-        <span>🤖 Metrology AI Legal Advisor</span>
+        <span>📖 Packaging FAQ Advisor</span>
         <button class="chat-close" id="chatCloseBtn">&times;</button>
       </div>
       <div class="chat-chips-bar" id="chatChipsBar">
@@ -414,7 +415,7 @@
         <button id="chatSendBtn" class="chat-btn">➤</button>
       </div>
     </div>
-    <button class="ai-fab" id="aiFab">🤖 Metrology AI</button>
+    <button class="ai-fab" id="aiFab">📖 Packaging Advisor</button>
   </div>
 
   <script src="config.js"></script>

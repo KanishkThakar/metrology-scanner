@@ -31,6 +31,11 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
+# Cloud runtime stores the database, evidence and reports on the mounted disk.
+if os.environ.get("METROLOGY_DATA_DIR"):
+    os.makedirs(os.environ["METROLOGY_DATA_DIR"], exist_ok=True)
+    os.chdir(os.environ["METROLOGY_DATA_DIR"])
+
 from database import engine, get_db, InspectionRecord, ComplianceRule, FontHeightThreshold, seed_database
 
 # ---------------------------------------------------------------------------
@@ -91,7 +96,7 @@ os.makedirs("presets", exist_ok=True)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
-app.mount("/presets", StaticFiles(directory="presets"), name="presets")
+app.mount("/presets", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "presets")), name="presets")
 
 @app.get("/api/v1/health")
 @app.get("/api/health")
@@ -1541,14 +1546,14 @@ def dispatch_statutory_notice(
 ):
     token = f"NOTICE-{uuid.uuid4().hex[:8].upper()}"
     return {
-        "status": "DISPATCHED",
+        "status": "DRAFT",
         "reference_id": token,
         "case_id": case_id,
         "sender": sender_id,
         "target": recipient_type,
         "contact": recipient_contact,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "message": f"Statutory notice issued under Section 36 of Legal Metrology Act, 2009 for Case {case_id}."
+        "message": f"Complaint draft for Case {case_id}. No notice or email has been sent. Download your report and submit it through the official consumer complaint portal."
     }
 
 # ---------------------------------------------------------------------------
