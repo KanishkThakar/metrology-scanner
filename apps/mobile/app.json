@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Metrology Scanner",
+    "slug": "metrology-scanner",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "scheme": "metrology",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.metrology.scanner"
+    },
+    "android": {
+      "package": "com.metrology.scanner"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose packaging photos for a scan.",
+          "cameraPermission": "Capture packaging evidence.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Capture packaging evidence.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Suggest your inspection jurisdiction."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Transcribe your spoken packaging question.",
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false
+        }
+      ],
+      "expo-sharing"
+    ],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

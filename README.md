@@ -11,6 +11,25 @@ license: apache-2.0
 short_description: Legal Metrology PCR 2011 Statutory Compliance AI Engine
 ---
 
+# Metrology platform stack
+
+The current application uses Next.js 16 for web, Expo SDK 57 / React Native for mobile, FastAPI / Python for the API, Tesseract for OCR, SQLite by default or PostgreSQL, and optional Sarvam speech and translation APIs.
+
+See [STACK_MIGRATION.md](STACK_MIGRATION.md) for architecture, setup, feature parity, database migration and verification. Existing scan data stays in `backend/inspections.db`, `backend/uploads` and `backend/reports` unless a persistent data directory is configured. The previous frontend remains in `FRONTEND` for rollback.
+
+```sh
+npm ci
+uv pip install --python .venv/bin/python -r backend/requirements.txt
+npm run api
+# In another terminal:
+npm run dev -- --port 3001
+# In another terminal, for mobile:
+npm run mobile -- --lan
+```
+
+Open the Next.js app on port 3001 and the API on port 8000. Native phones need your computer's LAN API address or an HTTPS hosted API, configured in the app's Settings. Sarvam requires a backend-only `SARVAM_API_KEY`; built-in language labels and scans work without it.
+
+
 # National Legal Metrology AI Enforcement Gateway
 ### Smart India Hackathon 2026 — Problem Statement #26034
 > **"Software System to check compliance of Packaged Commodities under Legal Metrology (Packaged Commodities) Rules, 2011 by scanning products, images and labels."**
@@ -21,7 +40,7 @@ short_description: Legal Metrology PCR 2011 Statutory Compliance AI Engine
 
 Under the **Legal Metrology Act, 2009** and the **Legal Metrology (Packaged Commodities) Rules, 2011 (PCR 2011)**, all pre-packaged commodities sold in the territory of India must bear statutory, tamper-proof declarations on their Principal Display Panel (PDP). Violations such as missing MRP tax declarations, non-SI units (e.g. `gm` or `ltr` instead of standard `g` or `l`), missing manufacturer addresses, missing Unit Sale Price (USP), or charging prices higher than printed MRP attract severe penal liabilities under **Section 36** (fines up to ₹25,000 for a 1st offense, ₹50,000 for a 2nd offense, and imprisonment for subsequent offenses).
 
-This repository contains a **complete, production-ready, fully deterministic compliance checking platform** built for enforcement officers and Indian consumers.
+This repository contains a package-label screening prototype with deterministic rule checks and OCR uncertainty. The demo login is not production authentication; reports require human review.
 
 ---
 

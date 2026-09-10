@@ -1,5 +1,9 @@
 import sys
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 if hasattr(sys.stdout, 'reconfigure'):
     try:
@@ -23,6 +27,8 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import text as sql_text
+from language import router as language_router
 import cv2
 import numpy as np
 from ocr import ENGINE_NAME, init_ocr_engine, extract_text
@@ -79,6 +85,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.include_router(language_router)
+
 # Open CORS to eliminate loopback and browser connection errors across origins
 app.add_middleware(
     CORSMiddleware,
@@ -102,6 +110,11 @@ app.mount("/presets", StaticFiles(directory=os.path.join(os.path.dirname(__file_
 @app.get("/api/health")
 def health_check():
     """System health & diagnostic telemetry for judiciary and inspection officers."""
+    try:
+        with engine.connect() as connection:
+            connection.execute(sql_text("SELECT 1"))
+    except Exception:
+        return JSONResponse(status_code=503, content={"status":"UNAVAILABLE", "error":"Database unavailable"})
     return {
         "status": "ONLINE",
         "node_id": "26034-DOCA-CENTRAL-AI",
@@ -110,7 +123,9 @@ def health_check():
         "statutory_act": "Legal Metrology Act, 2009 & Packaged Commodities Rules, 2011",
         "evidence_framework": "Section 63 Bharatiya Sakshya Adhiniyam, 2023 / Section 65B Indian Evidence Act",
         "ocr_engine": ocr_engine_name,
-        "database": "SQLite WAL Engine (Connected)",
+        "database": engine.dialect.name,
+        "language_provider": "Sarvam",
+        "language_configured": bool(os.getenv("SARVAM_API_KEY", "").strip()),
         "swagger_docs": "http://127.0.0.1:8000/docs",
         "redoc_docs": "http://127.0.0.1:8000/redoc",
         "timestamp": datetime.now(timezone.utc).isoformat()
@@ -1306,16 +1321,6 @@ def run_compliance_pipeline(
 # ---------------------------------------------------------------------------
 # API ENDPOINTS
 # ---------------------------------------------------------------------------
-@app.get("/api/health")
-def health_check():
-    return {
-        "status": "online",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "ocr_engine": ocr_engine_name,
-        "evidence_standard": "Section 63 BSA 2023 / Section 65B IEA 1872",
-        "pcr_rules_version": "PCR 2011 (Amended 2024)"
-    }
-
 @app.get("/api/rules")
 def get_compliance_rules(db: Session = Depends(get_db)):
     """Retrieves all statutory PCR 2011 compliance rules and Table II thresholds."""
@@ -1448,8 +1453,7 @@ async def scan_package(
                 evidence_sha256=evidence_hash
             )
             db.add(record)
-            db.commit()
-            db.refresh(record)
+            db.flush()
             db_id = record.id
             record.case_id = f"DoCA-LM-2026-{record.id:04d}"
 
@@ -1468,8 +1472,9 @@ async def scan_package(
             record.pdf_report_path = pdf_path
             db.commit()
         except Exception as db_err:
-            print("[WARN] SQLite / PDF logging error:", db_err)
+            print("[WARN] Database / PDF logging error:", db_err)
             db.rollback()
+            raise RuntimeError("Could not save the inspection and PDF. Please retry.") from db_err
 
         case_id_str = f"DoCA-LM-2026-{db_id:04d}"
 
@@ -1497,7 +1502,7 @@ async def scan_package(
         print(f"{CYAN}{'-'*75}{RESET}")
         print(f"⚖️   {BOLD}FINAL AUDIT VERDICT:{RESET} {v_col}{BOLD}{status}{RESET} (Violations: {pipeline_result['total_violations']})")
         print(f"📄  Section 63 BSA Dossier: reports/Audit_Report_{db_id}.pdf")
-        print(f"💾  Committed to SQLite:    Case ID {case_id_str}")
+        print(f"💾  Committed to {engine.dialect.name}: Case ID {case_id_str}")
         print(f"{CYAN}{BOLD}{'='*75}{RESET}\n")
 
         return {
@@ -1540,10 +1545,36 @@ def get_inspections(db: Session = Depends(get_db)):
             "location": f"{r.district}, {r.state}",
             "status": r.compliance_status or ("PASS" if r.is_compliant else "FAIL"),
             "violations": "None (Compliant)" if r.is_compliant else f"{r.total_violations} Violations",
+            "category": r.commodity_category,
+            "area": r.package_area_sq_cm,
             "pdf_url": f"/reports/Audit_Report_{r.id}.pdf"
         } for r in records]
     except Exception as e:
         return []
+
+@app.get("/api/inspections/{inspection_id}")
+def get_inspection(inspection_id: int, db: Session = Depends(get_db)):
+    record = db.get(InspectionRecord, inspection_id)
+    if record is None:
+        return JSONResponse(status_code=404, content={"error":"Record not found"})
+    image_name = os.path.basename(record.image_filename)
+    manifest_path = os.path.join("uploads", os.path.splitext(image_name)[0] + ".json")
+    photos = []
+    if os.path.exists(manifest_path):
+        with open(manifest_path, encoding="utf-8") as source:
+            photos = json.load(source).get("photos", [])
+    return {
+        "inspection_id": record.id, "case_id": record.case_id,
+        "brand": record.brand_name, "category": record.commodity_category,
+        "image_url": "/uploads/" + image_name,
+        "photo_count": len(photos) or 1, "photos": photos,
+        "report_pdf_url": f"/reports/Audit_Report_{record.id}.pdf",
+        "evidence_sha256": record.evidence_sha256,
+        "is_compliant": record.is_compliant, "compliance_status": record.compliance_status,
+        "total_violations": record.total_violations, "rules": record.rule_verifications,
+        "symbols": record.detected_symbols, "detections": [],
+        "extracted_text": record.extracted_text,
+    }
 
 @app.delete("/api/inspections/{inspection_id}")
 def delete_inspection(inspection_id: int, db: Session = Depends(get_db)):

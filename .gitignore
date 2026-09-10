@@ -27,3 +27,10 @@ reports/
 backend/reports/
 *.db
 *.db-*
+
+node_modules/
+.next/
+.expo/
+*.tsbuildinfo
+apps/mobile/ios/
+apps/mobile/android/

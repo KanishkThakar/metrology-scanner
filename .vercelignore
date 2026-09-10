@@ -7,3 +7,10 @@ Dockerfile
 packages.txt
 work/
 .venv/
+
+**/node_modules/
+**/.next/
+**/.expo/
+**/.env.local
+apps/mobile/ios/
+apps/mobile/android/

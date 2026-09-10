@@ -4,8 +4,19 @@ from sqlalchemy import create_engine, event, Column, Integer, String, Float, Dat
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./inspections.db")
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
+data_dir = Path(os.getenv("METROLOGY_DATA_DIR", Path(__file__).resolve().parent)).expanduser().resolve()
+data_dir.mkdir(parents=True, exist_ok=True)
+DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///" + str(data_dir / "inspections.db")
+# Explicit Psycopg 3 driver for both hosted PostgreSQL URL spellings.
+for prefix in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(prefix):
+        DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len(prefix):]
+        break
 
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(

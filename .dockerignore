@@ -9,3 +9,11 @@ dist
 **/reports
 **/*.db*
 .env*
+
+node_modules
+**/node_modules
+**/.next
+**/.expo
+apps
+packages
+tests
