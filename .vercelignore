@@ -1,0 +1,9 @@
+backend/
+models/
+presets/
+*.py
+requirements.txt
+Dockerfile
+packages.txt
+work/
+.venv/

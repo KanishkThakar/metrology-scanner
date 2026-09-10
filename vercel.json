@@ -3,5 +3,6 @@
   "framework": null,
   "buildCommand": "node scripts/build-web.mjs",
   "outputDirectory": "dist",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "installCommand": "echo Static web build"
 }
