@@ -213,3 +213,10 @@ Now open your browser and navigate to:
 
 ### Multiple package photos
 The web scanner accepts up to 8 images of the same package (15 MB each, 60 MB total). Add front, back and side photos in separate selections, drag them together, or capture more camera frames. Remove a photo with its × button. Tesseract reads each image and combines the text into one audit and labeled contact sheet. Original image bytes and a per-photo hash/text manifest are retained in uploads. Multi-photo font scale requires manual review. The API accepts repeated `files` multipart fields and still accepts the original single `file` field.
+
+### OCR verification and uncertainty
+Scanning retains up to a 2400-pixel image edge, checks quarter-turn orientation, and performs a second contrast/scale pass on difficult text. Price regions are re-read using grayscale, thresholded and joined-stroke images, with the pinned official `tessdata_best` English model providing another reading. It does not apply product-specific price replacements.
+
+Conflicting or weak price readings return `REVIEW`; dependent unit-price calculations are withheld. The UI exposes the individual price readings. Different prices across photos also require review. English OCR is not a guarantee of correct recognition on every label; unclear fields still need a close-up or human verification.
+
+Run the OCR regressions with `.venv/bin/python -m unittest discover -s backend -p 'test_*ocr.py'` and `.venv/bin/python -m unittest discover -s backend -p test_tesseract.py`.

@@ -341,7 +341,7 @@ def detect_symbols(img_bgr: np.ndarray, full_text: str) -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # DETERMINISTIC STATUTORY RULE VALIDATION ENGINE (10 DEDICATED FUNCTIONS)
 # ---------------------------------------------------------------------------
-def check_mrp(raw_lines: List[str], norm_text: str) -> Dict[str, Any]:
+def check_mrp(raw_lines: List[str], norm_text: str, ocr_data=None) -> Dict[str, Any]:
     """
     1. Maximum Retail Price (MRP) Check - Rule 6(1)(e)
     Enforces currency in Rs./₹, numeric value, and mandatory 'inclusive of all taxes' phrase.
@@ -423,6 +423,15 @@ def check_mrp(raw_lines: List[str], norm_text: str) -> Dict[str, Any]:
     elif p5 and float(p5.group(1)) > 0:
         mrp_val = p5.group(1)
 
+    price_review = False
+    if ocr_data is not None:
+        evidence = [d for d in ocr_data if "price_candidates" in d]
+        values = {d["price_value"] for d in evidence if d.get("price_value") is not None}
+        mrp_val = format(next(iter(values)), ".2f") if len(values) == 1 else None
+        price_review = not evidence or len(values) != 1 or any(d.get("price_needs_review", True) for d in evidence)
+        result["ocr_evidence"] = [{"photo_number": d.get("photo_number", 1), "bbox": d["bbox"],
+                                   "readings": d["price_evidence"], "candidates": d["price_candidates"]} for d in evidence]
+
     if mrp_val:
         result["detected_value"] = f"₹ {mrp_val}"
         if has_tax:
@@ -437,6 +446,10 @@ def check_mrp(raw_lines: List[str], norm_text: str) -> Dict[str, Any]:
         result["status"] = "FAIL"
         result["error_code"] = "MRP_MISSING"
         result["explanation"] = "No legible Maximum Retail Price (MRP) was detected on the packaging."
+
+    if price_review:
+        result.update(status="REVIEW", error_code="MRP_OCR_UNCERTAIN",
+                      explanation="Price OCR readings disagree or are insufficient. Confirm the printed MRP from a close-up before using it in calculations.")
 
     return result
 
@@ -1220,9 +1233,9 @@ def run_compliance_pipeline(
     norm_text = normalize_text_spacing(full_text)
 
     # 1. MRP
-    r_mrp = check_mrp(raw_lines, norm_text)
+    r_mrp = check_mrp(raw_lines, norm_text, ocr_data)
     mrp_float = 0.0
-    if r_mrp.get("detected_value"):
+    if r_mrp.get("detected_value") and r_mrp["status"] != "REVIEW":
         m = re.search(r"([0-9]+(?:\.[0-9]+)?)", r_mrp["detected_value"])
         if m: mrp_float = float(m.group(1))
 
@@ -1248,6 +1261,10 @@ def run_compliance_pipeline(
 
     # 8. Unit Sale Price & Rule 6(11) Second Proviso
     r_usp = check_usp_and_rule_6_11(raw_lines, norm_text, mrp_float, net_grams, parsed_kg)
+
+    if r_mrp["status"] == "REVIEW" and r_usp["status"] != "EXEMPT":
+        r_usp.update(status="REVIEW", error_code="USP_PRICE_UNCERTAIN",
+                     explanation="Unit sale price verification is withheld until the printed MRP is confirmed.")
 
     # 9. Font Compliance Table II
     r_font = check_font_compliance_table_ii(ocr_data, area, orig_w, orig_h)
@@ -1352,8 +1369,8 @@ async def scan_package(
             if img is None:
                 return JSONResponse(status_code=400, content={"error": f"Photo {number} is not a readable image."})
             h, w = img.shape[:2]
-            if max(h, w) > 1200:
-                scale = 1200 / max(h, w)
+            if max(h, w) > 2400:
+                scale = 2400 / max(h, w)
                 img = cv2.resize(img, (max(1, round(w*scale)), max(1, round(h*scale))))
             decoded.append((content, img))
 

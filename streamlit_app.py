@@ -295,8 +295,8 @@ with tab_scan:
                 cv_img = cv2.cvtColor(np.array(selected_img), cv2.COLOR_RGB2BGR)
                 h, w = cv_img.shape[:2]
                 orig_w, orig_h = w, h
-                if max(h, w) > 1200:
-                    scale = 1200.0 / float(max(h, w))
+                if max(h, w) > 2400:
+                    scale = 2400.0 / float(max(h, w))
                     cv_img = cv2.resize(cv_img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
 
                 # Compute SHA-256 evidence hash
