@@ -1112,7 +1112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "</div>" +
         "<div class='rule-detected'>" + (r.detected_value ? "Extracted: " + r.detected_value : "Not Detected") + "</div>" +
         (r.explanation ? "<div class='rule-statutory-explanation'>" + r.explanation + "</div>" : "") +
-        (errorMsg ? "<div class='" + errClass + "'>" + errPrefix + errorMsg + (r.penalty_clause ? " (" + r.penalty_clause + ")" : "") + "</div>" : "");
+        (errorMsg ? "<div class='" + errClass + "'>" + errPrefix + errorMsg + (r.penalty_clause && !isReview ? " (" + r.penalty_clause + ")" : "") + "</div>" : "");
       if (r.ocr_evidence && r.ocr_evidence.length) {
         const details = document.createElement("details");
         const summary = document.createElement("summary");
