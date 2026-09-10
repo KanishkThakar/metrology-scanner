@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>National Legal Metrology AI Platform | DoCA SIH-26034</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Guided Walkthrough Modal -->
+  <div id="guideOverlay" class="guide-overlay" style="display: none;">
+    <div class="guide-box" id="guideBox">
+      <div class="guide-header">
+        <span class="guide-step-tag" id="guideStepTag">Step 1 of 4</span>
+        <button class="guide-close" id="guideSkipBtn">&times;</button>
+      </div>
+      <h3 id="guideTitle">Welcome to Legal Metrology AI</h3>
+      <p id="guideDesc">Verify pre-packaged commodity labels according to statutory PCR 2011 rules.</p>
+      <div class="guide-actions">
+        <button class="btn-guide-next" id="guideNextBtn">Next Step ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Floating Packaged Commodities Login Gateway -->
+  <div class="modal-overlay" id="roleGatewayModal" style="display: flex;">
+    <canvas id="packagesCanvas" class="packages-bg-canvas"></canvas>
+
+    <div class="gov-auth-container">
+      <div class="gov-auth-pillar">
+        <div class="emblem-circle">
+          <div class="gov-seal-icon">⚖️</div>
+        </div>
+        <h2>Government of India</h2>
+        <h3>Department of Consumer Affairs</h3>
+        <p>National Legal Metrology Enforcement Portal (PCR 2011 & Section 36 Audit Gateway)</p>
+      </div>
+
+      <div class="gov-auth-form-column">
+        <div class="auth-role-tabs">
+          <button class="tab-btn active" id="tabCitizenBtn">Citizen Portal</button>
+          <button class="tab-btn" id="tabOfficerBtn">Officer Parichay SSO</button>
+        </div>
+
+        <form id="citizenLoginForm" class="auth-form-pane">
+          <div class="input-float-group">
+            <input type="text" id="citizenIdentityInput" required placeholder=" " autocomplete="off" />
+            <label>Mobile Number or Email</label>
+            <div id="citizenIdentityError" class="auth-input-error" style="display: none;"></div>
+          </div>
+          <div class="input-float-group">
+            <input type="text" id="citizenOtpInput" value="26034" required placeholder=" " maxlength="6" />
+            <label>OTP (Mock: 26034)</label>
+            <div id="citizenOtpError" class="auth-input-error" style="display: none;"></div>
+          </div>
+          <button type="submit" class="btn-gov-submit">Enter Citizen Mode</button>
+        </form>
+
+        <form id="officerLoginForm" class="auth-form-pane" style="display: none;">
+          <div class="input-float-group">
+            <input type="text" id="officerIdInput" required placeholder=" " />
+            <label>Officer Parichay Username</label>
+          </div>
+          <div class="input-float-group">
+            <input type="password" id="officerPassInput" required placeholder=" " />
+            <label>Password</label>
+          </div>
+          <div class="input-float-group">
+            <select id="officerStateSelect" class="gov-select-native">
+              <option value="Central Headquarters">Central Headquarters - New Delhi</option>
+              <option value="Maharashtra">Maharashtra State Metrology Cell</option>
+              <option value="Karnataka">Karnataka Weights & Measures Wing</option>
+              <option value="Andhra Pradesh">Andhra Pradesh Consumer Enforcement</option>
+              <option value="Tamil Nadu">Tamil Nadu Legal Metrology Division</option>
+              <option value="Gujarat">Gujarat Metrology Enforcement</option>
+              <option value="West Bengal">West Bengal Legal Metrology Directorate</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-gov-submit">Authenticate Officer via Parichay</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side Drawer Navigation -->
+  <div class="side-drawer-backdrop" id="drawerBackdrop" style="display: none;"></div>
+  <aside class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <div class="drawer-brand">⚖️ DoCA Node 26034</div>
+      <button class="drawer-close" id="drawerCloseBtn">&times;</button>
+    </div>
+    <div class="drawer-menu">
+      <a href="#workspace" class="drawer-link active">📍 Inspection Scanner</a>
+      <a href="#repositorySection" class="drawer-link" id="drawerRepoLink">📁 Case Audit Logs</a>
+      <hr class="drawer-divider" />
+      <span class="drawer-section-title">Backend Architecture & API Gateway</span>
+      <a href="http://127.0.0.1:8000/docs" target="_blank" class="drawer-link">⚡ FastAPI Swagger UI Docs</a>
+      <a href="http://127.0.0.1:8000/redoc" target="_blank" class="drawer-link">📑 ReDoc Architecture Docs</a>
+      <a href="http://127.0.0.1:8000/api/inspections" target="_blank" class="drawer-link">📊 SQLite Live Inspection Logs (JSON)</a>
+      <a href="http://127.0.0.1:8000/api/v1/health" target="_blank" class="drawer-link">🩺 System Diagnostics & Health</a>
+      <hr class="drawer-divider" />
+      <span class="drawer-section-title">Government Statutory Portals</span>
+      <a href="https://consumeraffairs.gov.in/pages/legal-metrology-act" target="_blank" class="drawer-link">🏛️ DoCA Metrology Act & Rules</a>
+      <a href="https://lm.doca.gov.in/" target="_blank" class="drawer-link">📜 e-Manak Verification Portal</a>
+      <a href="https://consumerhelpline.gov.in/" target="_blank" class="drawer-link">📞 NCH INGRAM Helpline (1915)</a>
+    </div>
+  </aside>
+
+  <!-- Top Navigation Bar with All 12 Languages -->
+  <header class="app-nav">
+    <div class="nav-left">
+      <button class="hamburger-btn" id="hamburgerBtn" title="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-brand">
+        <div class="nav-logo">⚖️</div>
+        <div class="brand-text">
+          <span class="agency" id="agencyTitleHeader">Department of Consumer Affairs</span>
+          <span class="sub">PCR 2011 Automated Inspection Gateway — Node ID: 26034</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-controls">
+      <select id="languageSelector" class="control-select">
+        <option value="en" selected>English</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="ur">اردو (Urdu)</option>
+      </select>
+
+      <button id="themeToggleBtn" class="btn-theme">☀️ Light</button>
+      <button id="viewRulesBtn" class="btn-outline">📖 PCR 2011 Rules</button>
+      <a href="http://127.0.0.1:8000/docs" target="_blank" class="btn-swagger" title="FastAPI Interactive Swagger Documentation (Port 8000)">⚡ Backend (Swagger)</a>
+      <span class="backend-pill" id="backendStatusPill" title="FastAPI Backend Status">● Backend: Online</span>
+
+      <div id="authContainer">
+        <div id="userInfo" class="user-badge" style="display: none;">
+          <span class="status-dot"></span>
+          <span id="officerName">Role: Citizen</span>
+          <button id="logoutBtn" class="btn-text">Switch</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Geography Ribbon -->
+  <section class="location-ribbon" id="guideStepLocation">
+    <div class="loc-detect-box">
+      <span class="loc-icon">📍</span>
+      <span id="locStatus">Jurisdiction:</span>
+    </div>
+    <div class="loc-input-fields">
+      <select id="stateDropdown" class="loc-select"></select>
+      <select id="districtDropdown" class="loc-select"></select>
+      <input type="text" id="pincodeInput" placeholder="Pincode" value="110001" />
+      <button id="refreshLocationBtn" class="btn-sm-action">🛰️ GPS Auto-Detect</button>
+    </div>
+  </section>
+
+  <!-- Metrics Ribbon -->
+  <section class="metrics-ribbon">
+    <div class="metric-card">
+      <span class="metric-title" id="lblTotalScanned">Total Products Scanned</span>
+      <span class="metric-val" id="totalChecksCount">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title" id="lblCompliant">Compliant Commodities</span>
+      <span class="metric-val text-success" id="compliantCount">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title" id="lblViolations">Violations Detected</span>
+      <span class="metric-val text-danger" id="violationCount">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Dispatched Notices</span>
+      <span class="metric-val text-warning" id="complaintsCount">0</span>
+    </div>
+  </section>
+
+  <!-- Commodity Filter Ribbon -->
+  <section class="filter-ribbon">
+    <div class="filter-group">
+      <label>Commodity Archetype:</label>
+      <select id="categoryFilter" class="filter-select">
+        <option value="FOOD">Packaged Groceries & Grains (Ravva, Atta, Rice, Pulses)</option>
+        <option value="DRINKS">Beverages & Bottled Drinks (Thums Up, Coke, Juices, Water)</option>
+        <option value="SOAP">Soaps & Detergent Bars (Exo, Vim, Lifebuoy, Surf)</option>
+        <option value="COSMETICS">Cosmetics & Personal Care (Santoor, Creams, Lotions)</option>
+        <option value="ELECTRONICS">Electronics & Appliances (Earphones, Chargers)</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Audit Status:</label>
+      <select id="statusFilter" class="filter-select">
+        <option value="ALL">All Scans</option>
+        <option value="FAIL">Flagged Violations Only</option>
+        <option value="PASS">Certified Compliant Only</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- 1-Click Demonstration Presets for Judges & Inspectors -->
+  <section class="presets-ribbon">
+    <div class="presets-label">
+      <span>🎯 <strong>1-Click Demo Presets:</strong></span>
+    </div>
+    <div class="presets-container">
+      <button class="preset-btn" data-preset="atta_1kg_compliant">
+        <span class="preset-icon">🌾</span>
+        <span class="preset-name">Atta 1 kg</span>
+        <span class="preset-tag pass">PASS (Rule 6(11) Exempt)</span>
+      </button>
+      <button class="preset-btn" data-preset="biscuit_non_si_violation">
+        <span class="preset-icon">🍪</span>
+        <span class="preset-name">Biscuits 200 gm</span>
+        <span class="preset-tag fail">FAIL (Non-SI 'gm' Unit)</span>
+      </button>
+      <button class="preset-btn" data-preset="cold_drink_750ml_compliant">
+        <span class="preset-icon">🥤</span>
+        <span class="preset-name">Cola 750 ml</span>
+        <span class="preset-tag pass">PASS (USP Declared)</span>
+      </button>
+      <button class="preset-btn" data-preset="soap_tfm_compliant">
+        <span class="preset-icon">🧼</span>
+        <span class="preset-name">Soap 125 g</span>
+        <span class="preset-tag pass">PASS (TFM Grade 1)</span>
+      </button>
+      <button class="preset-btn" data-preset="earbuds_origin_violation">
+        <span class="preset-icon">🎧</span>
+        <span class="preset-name">Wireless Earbuds</span>
+        <span class="preset-tag fail">FAIL (Missing Origin)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Workspace Grid -->
+  <main class="dashboard-grid" id="workspace">
+    <section class="panel upload-panel" id="guideStepUpload">
+      <div class="panel-header-row">
+        <div>
+          <h2 class="panel-title" id="lblUploadTitle">Product Evidence Capture</h2>
+          <p class="panel-subtitle" id="lblUploadSub">Upload packaging photo or capture via live camera.</p>
+        </div>
+        <div class="input-toggle">
+          <button id="modeUploadBtn" class="toggle-btn active">File Upload</button>
+          <button id="modeCameraBtn" class="toggle-btn">Live Camera</button>
+        </div>
+      </div>
+
+      <div class="upload-zone" id="dropZone">
+        <div class="zone-icon">📷</div>
+        <strong id="lblDropText">Click or Drag Commodity Label Image</strong>
+        <span id="lblDropHint">Supports PNG, JPG, WEBP formats</span>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden />
+      </div>
+
+      <p>Add up to 8 photos of the same package — front, back and sides.</p>
+      <div id="photoList" aria-live="polite" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"></div>
+      <div class="camera-zone" id="cameraContainer" style="display: none;">
+        <video id="videoFeed" autoplay playsinline></video>
+        <button id="captureBtn" class="btn-capture">📸 Snap Product Frame</button>
+      </div>
+
+      <div class="form-row" id="guideStepArea">
+        <label for="packageArea" id="lblPdpArea">Principal Display Panel Area (sq. cm):</label>
+        <input type="number" id="packageArea" value="95.0" step="0.5" min="1" max="5000" />
+      </div>
+
+      <div class="preview-wrapper" id="previewContainer" style="display: none;">
+        <canvas id="detectionCanvas"></canvas>
+      </div>
+
+      <button id="scanButton" class="btn-primary" disabled>
+        Run Legal Metrology Verification
+      </button>
+
+      <div id="statusBar" class="status-bar">
+        System Standby. Select packaging photo or click a demo preset.
+      </div>
+    </section>
+
+    <section class="panel results-panel" id="guideStepAudit">
+      <div class="results-header">
+        <div>
+          <h2 class="panel-title" id="lblAuditTitle">PCR 2011 Compliance Audit</h2>
+          <div class="badge-row">
+            <span id="caseIdBadge" class="case-badge">Case ID: Unassigned</span>
+            <span class="evidence-pill">⚖️ Section 63 BSA 2023 / 65B IEA</span>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button id="fileComplaintBtn" class="btn-danger-sm" style="display: none;">
+            🚨 Report Non-Compliance
+          </button>
+          <a id="downloadPdfBtn" href="#" target="_blank" class="btn-secondary" style="display: none;">
+            📄 Download Section 65B/BSA Report PDF
+          </a>
+        </div>
+      </div>
+
+      <div id="complianceVerdict" class="verdict-banner">
+        Audit Pending — Run scan or select 1-click demo preset above.
+      </div>
+
+      <!-- Regulatory Marks & Visual Symbols Detection Card -->
+      <div id="detectedSymbolsBox" class="symbols-card" style="display: none;">
+        <div class="symbols-title">🛡️ Detected Regulatory Marks & Symbols:</div>
+        <div class="symbols-chips" id="symbolsChipsList"></div>
+      </div>
+
+      <div class="rules-container" id="rulesList"></div>
+    </section>
+
+    <!-- Inspection Repository -->
+    <section class="panel repository-panel" id="repositorySection" style="display: none;">
+      <div class="results-header">
+        <div>
+          <h2 class="panel-title">Inspection Audit Repository & Evidence Logs</h2>
+          <p class="panel-subtitle">Search, retrieve, dispatch notices, and export historical packaged commodity scans.</p>
+        </div>
+        <div class="action-buttons">
+          <button id="exportCsvBtn" class="btn-secondary">📥 Export CSV</button>
+          <button id="exportJsonBtn" class="btn-secondary">📥 Export JSON</button>
+        </div>
+      </div>
+
+      <div class="repo-search-bar">
+        <input type="text" id="repoSearchInput" placeholder="Search by Case ID, Brand Name, or Location..." />
+      </div>
+
+      <div class="table-responsive">
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th>Case ID</th>
+              <th>Timestamp</th>
+              <th>Commodity / Brand</th>
+              <th>Location</th>
+              <th>Area (sq. cm)</th>
+              <th>Status</th>
+              <th>Violations</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Report Dispatch Modal -->
+  <div class="modal-overlay" id="dispatchNoticeModal" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Report Non-Compliance</h3>
+        <button class="close-modal" id="closeDispatchModal">&times;</button>
+      </div>
+      <form id="dispatchForm" class="modal-body">
+        <label>Select Authority</label>
+        <select class="control-select w-100" id="dispatchTargetSelect">
+          <option value="LOCAL_BODY">District Consumer Protection Council / Local Controller</option>
+          <option value="STATE_COMMISSION">State Consumer Disputes Redressal Commission</option>
+          <option value="MANUFACTURER">Manufacturer Registered Grievance Cell</option>
+        </select>
+        <label>Authority or Manufacturer Contact Email</label>
+        <input type="email" id="dispatchContactInput" value="enforcement@doca.gov.in" required />
+        <button type="submit" class="btn-primary w-100 mt-3">Transmit Evidence Dossier</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PCR 2011 Rules Modal -->
+  <div class="modal-overlay" id="rulesModal" style="display: none;">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="rulesModalHeading">Legal Metrology (Packaged Commodities) Rules, 2011 Reference</h3>
+        <button class="close-modal" id="closeRulesModal">&times;</button>
+      </div>
+      <div class="modal-body modal-scroll">
+        <ul class="pcr-rules-ref" id="rulesListModalContent"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversational Metrology AI Legal Advisor -->
+  <div class="ai-widget-container">
+    <div class="ai-chat-window" id="aiChatWindow" style="display: none;">
+      <div class="chat-header">
+        <span>🤖 Metrology AI Legal Advisor</span>
+        <button class="chat-close" id="chatCloseBtn">&times;</button>
+      </div>
+      <div class="chat-chips-bar" id="chatChipsBar">
+        <button class="chat-chip" data-query="Can shopkeeper charge extra cooling charges for chilled soft drinks above MRP?">❄️ Cooling Charges</button>
+        <button class="chat-chip" data-query="Is dual pricing allowed at airports or multiplexes?">✈️ Airport Pricing</button>
+        <button class="chat-chip" data-query="Can a retailer paste a sticker over the printed MRP?">🏷️ Price Stickers</button>
+        <button class="chat-chip" data-query="What is the Rule 6(11) Unit Sale Price exemption for 1 kg packs?">⚖️ Rule 6(11) USP</button>
+        <button class="chat-chip" data-query="What are the penalties under Section 36 of Legal Metrology Act?">🚨 Section 36 Fines</button>
+        <button class="chat-chip" data-query="How do I contact National Consumer Helpline (NCH 1915)?">📞 Helpline 1915</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-bar">
+        <input type="text" id="chatTextInput" placeholder="Ask about rules, overcharging, stickers, Section 36..." />
+        <button id="chatSendBtn" class="chat-btn">➤</button>
+      </div>
+    </div>
+    <button class="ai-fab" id="aiFab">🤖 Metrology AI</button>
+  </div>
+
+  <script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
