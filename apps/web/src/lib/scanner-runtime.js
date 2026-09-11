@@ -1073,6 +1073,10 @@ export function initializeScanner(configuredApiUrl = "") {
   if (mobileToolsBtn) listen(mobileToolsBtn, 'click', () => {
     const open = nav.classList.toggle('tools-open');
     mobileToolsBtn.setAttribute('aria-expanded', String(open));
+    if (open && aiChatWindow) {
+      aiChatWindow.style.display = 'none';
+      document.getElementById('mobileAdvisorBtn')?.setAttribute('aria-expanded', 'false');
+    }
   });
   listen(document, 'click', event => {
     if (!nav?.contains(event.target)) closeTools();

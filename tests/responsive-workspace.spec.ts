@@ -63,6 +63,11 @@ test('phone, tablet and desktop layouts keep controls on screen', async ({ page 
   await page.locator('#mobileAdvisorBtn').click();
   await expect(page.locator('#aiChatWindow')).toBeVisible();
   await fits(page);
+  await page.locator('#mobileToolsBtn').click();
+  await expect(page.locator('#aiChatWindow')).toBeHidden();
+  await expect(page.locator('#mobileAdvisorBtn')).toHaveAttribute('aria-expanded', 'false');
+  await page.locator('#mobileToolsBtn').click();
+  await page.locator('#mobileAdvisorBtn').click();
   await page.locator('#chatCloseBtn').click();
   await expect(page.locator('#mobileAdvisorBtn')).toHaveAttribute('aria-expanded', 'false');
   await page.locator('.mobile-dock a[href="#guideStepAudit"]').click();
