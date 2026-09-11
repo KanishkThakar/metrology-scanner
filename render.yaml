@@ -11,5 +11,7 @@ services:
         value: /data
       - key: TESSERACT_LANG
         value: eng
+      - key: TESSERACT_TIMEOUT_SECONDS
+        value: "120"
       - key: OMP_THREAD_LIMIT
         value: "1"

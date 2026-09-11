@@ -29,7 +29,7 @@ def init_ocr_engine():
 def _read_lines(image, psm=11, min_confidence=15, model_config=""):
     data = pytesseract.image_to_data(
         image, lang=os.environ.get("TESSERACT_LANG", "eng"),
-        config=f"{model_config} --oem 1 --psm {psm}", output_type=pytesseract.Output.DICT, timeout=20,
+        config=f"{model_config} --oem 1 --psm {psm}", output_type=pytesseract.Output.DICT, timeout=float(os.environ.get("TESSERACT_TIMEOUT_SECONDS", "20")),
     )
     groups = {}
     for i, text in enumerate(data["text"]):

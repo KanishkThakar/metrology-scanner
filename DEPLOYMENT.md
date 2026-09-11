@@ -12,7 +12,7 @@ Backend origin: **https://metrology-scanner-api.onrender.com**. Service ID: `srv
 
 The live service uses an official Python container pinned by digest. The application source is uploaded privately through Render's API as a checksum-verified secret-file bundle. This avoids granting Render access to the GitHub repository. The bundle contains only committed backend/frontend code and demo presets; local databases, reports, user photos and credentials are excluded. The OCR and rule implementations are unchanged. The scan endpoint runs its blocking OCR work in a worker thread, leaving health checks responsive; a second simultaneous scan receives a clear HTTP 429 response to keep memory bounded on the free instance.
 
-At startup `scripts/render-runtime-bootstrap.py` installs native Tesseract and Python dependencies pinned to the working local versions, restores the demo images, verifies the pinned `tessdata_best` model's SHA-256 and starts FastAPI. Startup on the free CPU can take several minutes. `OMP_THREAD_LIMIT=1` and `OPENBLAS_NUM_THREADS=1` prevent excess worker threads. Render health checks succeed only once the OCR engine and database are ready.
+At startup `scripts/render-runtime-bootstrap.py` installs native Tesseract and Python dependencies pinned to the working local versions, restores the demo images, verifies the pinned `tessdata_best` model's SHA-256 and starts FastAPI. Startup on the free CPU can take several minutes. `TESSERACT_TIMEOUT_SECONDS=120` allows difficult photos to complete on that CPU while local OCR retains its 20-second per-pass default. `OMP_THREAD_LIMIT=1` and `OPENBLAS_NUM_THREADS=1` prevent excess worker threads. Render health checks succeed only once the OCR engine and database are ready.
 
 ### Update the deployed API
 
