@@ -10,6 +10,7 @@ export function initializeScanner(configuredApiUrl = "") {
   const timers = new Set();
   const frames = new Set();
   const intervals = new Set();
+  const photoObjectUrls = new Map();
   function listen(target, event, handler, options = {}) {
     target.addEventListener(event, handler, { ...(typeof options === 'boolean' ? {capture:options} : options), signal:lifetime.signal });
   }
@@ -23,6 +24,7 @@ export function initializeScanner(configuredApiUrl = "") {
     lifetime.abort();
     timers.forEach(clearTimeout); intervals.forEach(clearInterval); frames.forEach(cancelAnimationFrame);
     if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+    photoObjectUrls.forEach(url => URL.revokeObjectURL(url));
     disposers.forEach(fn => fn());
   }
 
@@ -143,8 +145,8 @@ export function initializeScanner(configuredApiUrl = "") {
       lblViolations: "Violations Detected",
       lblUploadTitle: "Product Evidence Capture",
       lblUploadSub: "Upload packaging photo or capture via live camera.",
-      lblDropText: "Click or Drag Commodity Label Image",
-      lblDropHint: "Supports PNG, JPG, WEBP formats",
+      lblDropText: "Add your package photos",
+      lblDropHint: "Choose photos or drop them here · JPG, PNG, WEBP",
       lblPdpArea: "Principal Display Panel Area (sq. cm):",
       scanBtn: "Run Legal Metrology Verification",
       lblAuditTitle: "PCR 2011 Compliance Audit",
@@ -743,6 +745,10 @@ export function initializeScanner(configuredApiUrl = "") {
     });
 
     function renderPhysics() {
+      if (document.hidden || roleGatewayModal.style.display === "none" || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        later(renderPhysics, 500);
+        return;
+      }
       pctx.clearRect(0, 0, cw, ch);
       for (let i = 0; i < pkgs.length; i++) {
         const p = pkgs[i];
@@ -754,7 +760,7 @@ export function initializeScanner(configuredApiUrl = "") {
         if (p.y > ch + 40) p.y = -40;
 
         const dist = Math.hypot(mouseX - p.x, mouseY - p.y);
-        if (dist < 160) {
+        if (dist > 0 && dist < 160) {
           const f = (160 - dist) / 160;
           p.x -= ((mouseX - p.x) / dist) * f * 2.8;
           p.y -= ((mouseY - p.y) / dist) * f * 2.8;
@@ -1035,6 +1041,9 @@ export function initializeScanner(configuredApiUrl = "") {
     if (sideDrawer && drawerBackdrop) {
       sideDrawer.classList.add("open");
       drawerBackdrop.style.display = "block";
+      sideDrawer.inert = false;
+      hamburgerBtn?.setAttribute("aria-expanded", "true");
+      drawerCloseBtn?.focus();
     }
   }
 
@@ -1042,12 +1051,46 @@ export function initializeScanner(configuredApiUrl = "") {
     if (sideDrawer && drawerBackdrop) {
       sideDrawer.classList.remove("open");
       drawerBackdrop.style.display = "none";
+      sideDrawer.inert = true;
+      hamburgerBtn?.setAttribute("aria-expanded", "false");
     }
   }
 
   if (hamburgerBtn) listen(hamburgerBtn, "click", openDrawer);
   if (drawerCloseBtn) listen(drawerCloseBtn, "click", closeDrawer);
   if (drawerBackdrop) listen(drawerBackdrop, "click", closeDrawer);
+  if (sideDrawer) {
+    sideDrawer.inert = true;
+    sideDrawer.querySelectorAll('a').forEach(link => listen(link, 'click', closeDrawer));
+  }
+
+  const mobileToolsBtn = document.getElementById('mobileToolsBtn');
+  const nav = document.querySelector('.app-nav');
+  function closeTools() {
+    nav?.classList.remove('tools-open');
+    mobileToolsBtn?.setAttribute('aria-expanded', 'false');
+  }
+  if (mobileToolsBtn) listen(mobileToolsBtn, 'click', () => {
+    const open = nav.classList.toggle('tools-open');
+    mobileToolsBtn.setAttribute('aria-expanded', String(open));
+  });
+  listen(document, 'click', event => {
+    if (!nav?.contains(event.target)) closeTools();
+  });
+  if (viewRulesBtn) listen(viewRulesBtn, 'click', closeTools);
+  if (logoutBtn) listen(logoutBtn, 'click', closeTools);
+  listen(document, 'keydown', event => {
+    if (event.key === 'Escape') {
+      if (sideDrawer?.classList.contains('open')) { closeDrawer(); hamburgerBtn?.focus(); }
+      if (nav?.classList.contains('tools-open')) { closeTools(); mobileToolsBtn?.focus(); }
+    }
+  });
+  const dockLinks = document.querySelectorAll('.mobile-dock a');
+  dockLinks.forEach(link => listen(link, 'click', () => {
+    dockLinks.forEach(item => item.classList.toggle('active', item === link));
+    if (aiChatWindow) aiChatWindow.style.display = 'none';
+    document.getElementById('mobileAdvisorBtn')?.setAttribute('aria-expanded', 'false');
+  }));
 
   // -------------------------------------------------------------
   // 9. DYNAMIC TRANSLATION ENGINE (UI, Rules Modal & Scan Cards)
@@ -1190,8 +1233,13 @@ export function initializeScanner(configuredApiUrl = "") {
   if (aiFab && aiChatWindow) {
     listen(aiFab, "click", () => {
       aiChatWindow.style.display = (aiChatWindow.style.display === "none" || !aiChatWindow.style.display) ? "flex" : "none";
+      document.getElementById('mobileAdvisorBtn')?.setAttribute('aria-expanded', String(aiChatWindow.style.display === 'flex'));
+      if (aiChatWindow.style.display === 'flex') document.getElementById('chatTextInput')?.focus({preventScroll: true});
     });
   }
+  const mobileAdvisorBtn = document.getElementById('mobileAdvisorBtn');
+  if (mobileAdvisorBtn) listen(mobileAdvisorBtn, 'click', () => aiFab?.click());
+  if (chatCloseBtn) listen(chatCloseBtn, 'click', () => mobileAdvisorBtn?.setAttribute('aria-expanded', 'false'));
   if (chatCloseBtn && aiChatWindow) {
     listen(chatCloseBtn, "click", () => aiChatWindow.style.display = "none");
   }
@@ -1253,6 +1301,9 @@ export function initializeScanner(configuredApiUrl = "") {
   // -------------------------------------------------------------
   if (dropZone && fileInput) {
     listen(dropZone, "click", () => fileInput.click());
+    listen(dropZone, 'keydown', event => {
+      if (event.target === dropZone && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); fileInput.click(); }
+    });
     listen(fileInput, "change", (e) => {
       if (e.target.files && e.target.files.length > 0) handleFiles(e.target.files);
     });
@@ -1268,12 +1319,24 @@ export function initializeScanner(configuredApiUrl = "") {
   function renderPhotoList() {
     const list = document.getElementById("photoList");
     list.replaceChildren();
+    setText('photoCount', selectedFiles.length + ' / 8');
+    for (const [file, url] of photoObjectUrls) {
+      if (!selectedFiles.includes(file)) { URL.revokeObjectURL(url); photoObjectUrls.delete(file); }
+    }
     selectedFiles.forEach((file, index) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "btn-secondary";
-      button.textContent = "Photo " + (index + 1) + ": " + file.name + " ×";
-      button.title = "Remove this photo";
+      button.setAttribute('aria-label', 'Remove photo ' + (index + 1) + ': ' + file.name);
+      button.title = 'Remove photo ' + (index + 1) + ': ' + file.name;
+      if (!photoObjectUrls.has(file)) photoObjectUrls.set(file, URL.createObjectURL(file));
+      const thumbnail = document.createElement('img');
+      thumbnail.className = 'photo-thumbnail'; thumbnail.alt = ''; thumbnail.src = photoObjectUrls.get(file);
+      const filename = document.createElement('span');
+      filename.className = 'photo-filename'; filename.textContent = 'Photo ' + (index + 1) + ': ' + file.name;
+      const remove = document.createElement('span');
+      remove.className = 'photo-remove'; remove.textContent = '×'; remove.setAttribute('aria-hidden', 'true');
+      button.append(thumbnail, filename, remove);
       button.disabled = scanning;
       button.onclick = () => {
         selectedFiles.splice(index, 1);
@@ -1379,6 +1442,7 @@ export function initializeScanner(configuredApiUrl = "") {
       renderPhotoList();
 
       scanButton.disabled = true;
+      scanButton.setAttribute('aria-busy', 'true');
       renderOCREngineChoice();
       const engineLabel = ({paddleocr: 'PaddleOCR', tesseract: 'Tesseract OCR', hybrid: 'PaddleOCR + Tesseract'})[selectedOCREngine];
       const scanStarted = performance.now();
@@ -1479,6 +1543,10 @@ export function initializeScanner(configuredApiUrl = "") {
         renderHistoryTable();
         clearInterval(scanTimer);
         updateStatusBar('Audit complete · ' + engineLabel + ' · ' + ((performance.now() - scanStarted) / 1000).toFixed(1) + 's. Case ' + caseId + ' persisted to database.');
+        if (window.matchMedia('(max-width: 700px)').matches) {
+          document.getElementById('guideStepAudit')?.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+          dockLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#guideStepAudit'));
+        }
 
       } catch (e) {
         console.error("[SCAN ERROR]", e);
@@ -1488,6 +1556,7 @@ export function initializeScanner(configuredApiUrl = "") {
         clearInterval(scanTimer);
         intervals.delete(scanTimer);
         scanning = false;
+        scanButton.setAttribute('aria-busy', 'false');
         renderOCREngineChoice();
         renderPhotoList();
         scanButton.disabled = !selectedFiles.length || !backendOnline;
@@ -1752,7 +1821,11 @@ export function initializeScanner(configuredApiUrl = "") {
     if (guideNextBtn) guideNextBtn.textContent = tourIndex === tourSteps.length - 1 ? "Finish Tour ✔" : "Next Step ➔";
 
     const el = document.getElementById(s.target);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (el) {
+      const settings = el.closest('details');
+      if (settings) settings.open = true;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }
 
   if (guideNextBtn) {

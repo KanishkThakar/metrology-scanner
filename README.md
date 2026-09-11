@@ -31,6 +31,14 @@ npm run mobile -- --lan
 Open the Next.js app on port 3001 and the API on port 8000. Native phones need your computer's LAN API address or an HTTPS hosted API, configured in the app's Settings. Sarvam requires a backend-only `SARVAM_API_KEY`; built-in language labels and scans work without it.
 
 
+## Website and mobile workspace
+
+The Next.js website and Expo app share a forest-green and paper design, with photo capture first, compact scan settings, and clear results. On phones, bottom navigation opens Scan, Results, and Advisor; officer history and account settings remain available. The web header groups language, appearance, rules, connection status, and account controls into a phone-sized menu. Long filenames use removable thumbnails, report actions wrap, and rule cards scroll with the page.
+
+The Expo app also offers PaddleOCR, Tesseract, and Both, remembers the selection, and opens Results after a successful scan. Demo roles, eight-photo capture, camera, category/location/area controls, reports, complaint drafts, history exports, language tools, and the packaging FAQ remain available. Sign-in is explicitly a demo.
+
+Validation covers 320–1440px web layouts in Chromium and WebKit, real multiple-photo scans and PDFs, and the Expo web implementation of scan/results/advisor/settings/officer-history flows. Android and iOS JavaScript bundles are export-checked; this is not an app-store release or a physical-device camera test.
+
 ## Choose the OCR engine
 
 The scanner has three buttons. The browser remembers the selected mode:

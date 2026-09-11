@@ -1,17 +1,21 @@
 import ScannerRuntime from '../components/ScannerRuntime';
 import LanguageTools from '../components/LanguageTools';
 
+function ScanIcon() {
+  return <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3H5a2 2 0 0 0-2 2v5m19-7h5a2 2 0 0 1 2 2v5M3 22v5a2 2 0 0 0 2 2h5m12 0h5a2 2 0 0 0 2-2v-5M10 11h12M10 16h12M10 21h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>;
+}
+
 export default function Page() {
   const apiUrl = process.env.METROLOGY_API_URL || process.env.NEXT_PUBLIC_API_URL || '';
   return <>
 
 
-  
+
   <div id="guideOverlay" className="guide-overlay" style={{"display": "none"}}>
     <div className="guide-box" id="guideBox">
       <div className="guide-header">
         <span className="guide-step-tag" id="guideStepTag">Step 1 of 4</span>
-        <button className="guide-close" id="guideSkipBtn">&times;</button>
+        <button className="guide-close" id="guideSkipBtn" aria-label="Skip tour">&times;</button>
       </div>
       <h3 id="guideTitle">Welcome to Legal Metrology AI</h3>
       <p id="guideDesc">Verify pre-packaged commodity labels according to statutory PCR 2011 rules.</p>
@@ -21,35 +25,37 @@ export default function Page() {
     </div>
   </div>
 
-  
+
   <div className="modal-overlay" id="roleGatewayModal" style={{"display": "flex"}}>
     <canvas id="packagesCanvas" className="packages-bg-canvas"></canvas>
 
     <div className="gov-auth-container">
       <div className="gov-auth-pillar">
         <div className="emblem-circle">
-          <div className="gov-seal-icon">⚖️</div>
+          <div className="gov-seal-icon"><ScanIcon /></div>
         </div>
-        <h2>Government of India</h2>
-        <h3>Department of Consumer Affairs</h3>
-        <p>National Legal Metrology Enforcement Portal (PCR 2011 & Section 36 Audit Gateway)</p>
+        <span className="auth-eyebrow">METROLOGY / LABEL INTELLIGENCE</span>
+        <h2>A little clarity.<br /><em>On every label.</em></h2>
+        <p>Capture your package. Read the details. Build a clearer picture.</p>
+        <span className="auth-demo-note">Demo workspace · Human review matters</span>
       </div>
 
       <div className="gov-auth-form-column">
+        <div className="auth-welcome"><h3>Welcome to your workspace</h3><p>Choose how you’d like to explore.</p></div>
         <div className="auth-role-tabs">
-          <button className="tab-btn active" id="tabCitizenBtn">Citizen Portal</button>
-          <button className="tab-btn" id="tabOfficerBtn">Officer Parichay SSO</button>
+          <button className="tab-btn active" id="tabCitizenBtn">Citizen</button>
+          <button className="tab-btn" id="tabOfficerBtn">Officer demo</button>
         </div>
 
         <form id="citizenLoginForm" className="auth-form-pane">
           <div className="input-float-group">
             <input type="text" id="citizenIdentityInput" required placeholder=" " autoComplete="off" />
-            <label>Mobile Number or Email</label>
+            <label htmlFor="citizenIdentityInput">Mobile Number or Email</label>
             <div id="citizenIdentityError" className="auth-input-error" style={{"display": "none"}}></div>
           </div>
           <div className="input-float-group">
-            <input type="text" id="citizenOtpInput" defaultValue="26034" required placeholder=" " maxLength={6} />
-            <label>OTP (Mock: 26034)</label>
+            <input type="text" id="citizenOtpInput" inputMode="numeric" defaultValue="26034" required placeholder=" " maxLength={6} />
+            <label htmlFor="citizenOtpInput">Demo code: 26034</label>
             <div id="citizenOtpError" className="auth-input-error" style={{"display": "none"}}></div>
           </div>
           <button type="submit" className="btn-gov-submit">Enter Citizen Mode</button>
@@ -58,11 +64,11 @@ export default function Page() {
         <form id="officerLoginForm" className="auth-form-pane" style={{"display": "none"}}>
           <div className="input-float-group">
             <input type="text" id="officerIdInput" required placeholder=" " />
-            <label>Officer Parichay Username</label>
+            <label htmlFor="officerIdInput">Officer demo username</label>
           </div>
           <div className="input-float-group">
             <input type="password" id="officerPassInput" required placeholder=" " />
-            <label>Password</label>
+            <label htmlFor="officerPassInput">Demo password</label>
           </div>
           <div className="input-float-group">
             <select id="officerStateSelect" className="gov-select-native">
@@ -75,18 +81,18 @@ export default function Page() {
               <option value="West Bengal">West Bengal Legal Metrology Directorate</option>
             </select>
           </div>
-          <button type="submit" className="btn-gov-submit">Authenticate Officer via Parichay</button>
+          <button type="submit" className="btn-gov-submit">Enter Officer Mode</button>
         </form>
       </div>
     </div>
   </div>
 
-  
+
   <div className="side-drawer-backdrop" id="drawerBackdrop" style={{"display": "none"}}></div>
-  <aside className="side-drawer" id="sideDrawer">
+  <aside className="side-drawer" id="sideDrawer" aria-label="Navigation">
     <div className="drawer-header">
-      <div className="drawer-brand">⚖️ DoCA Node 26034</div>
-      <button className="drawer-close" id="drawerCloseBtn">&times;</button>
+      <div className="drawer-brand">metrology. / workspace</div>
+      <button className="drawer-close" id="drawerCloseBtn" aria-label="Close navigation">&times;</button>
     </div>
     <div className="drawer-menu">
       <a href="#workspace" className="drawer-link active">📍 Inspection Scanner</a>
@@ -105,23 +111,25 @@ export default function Page() {
     </div>
   </aside>
 
-  
+
   <header className="app-nav">
     <div className="nav-left">
-      <button className="hamburger-btn" id="hamburgerBtn" title="Menu">
+      <button className="hamburger-btn" id="hamburgerBtn" title="Menu" aria-label="Open navigation" aria-controls="sideDrawer" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <div className="nav-brand">
-        <div className="nav-logo">⚖️</div>
+        <div className="nav-logo"><ScanIcon /></div>
         <div className="brand-text">
+          <span className="product-wordmark">metrology<span>.</span></span>
           <span className="agency" id="agencyTitleHeader">Department of Consumer Affairs</span>
           <span className="sub">PCR 2011 Automated Inspection Gateway — Node ID: 26034</span>
         </div>
       </div>
     </div>
 
-    <div className="nav-controls">
-      <select id="languageSelector" className="control-select">
+    <button type="button" id="mobileToolsBtn" className="mobile-tools-btn" aria-controls="navControls" aria-expanded="false" aria-label="Open language, appearance and account settings"><span aria-hidden="true">•••</span></button>
+    <div className="nav-controls" id="navControls">
+      <select id="languageSelector" aria-label="Language" className="control-select">
         <option value="en">English</option>
         <option value="te">తెలుగు (Telugu)</option>
         <option value="hi">हिन्दी (Hindi)</option>
@@ -151,44 +159,58 @@ export default function Page() {
     </div>
   </header>
 
-  
-  <section className="location-ribbon" id="guideStepLocation">
-    <div className="loc-detect-box">
-      <span className="loc-icon">📍</span>
-      <span id="locStatus">Jurisdiction:</span>
+
+  <section className="workspace-intro" aria-labelledby="workspaceTitle">
+    <div><p className="eyebrow"><span></span> YOUR PACKAGE. IN FOCUS.</p>
+      <h1 id="workspaceTitle">Know your <em>label.</em></h1>
+      <p className="intro-description">A clearer read. A more informed decision.</p>
     </div>
-    <div className="loc-input-fields">
-      <select id="stateDropdown" className="loc-select"></select>
-      <select id="districtDropdown" className="loc-select"></select>
-      <input type="text" id="pincodeInput" placeholder="Pincode" defaultValue="110001" />
-      <button id="refreshLocationBtn" className="btn-sm-action">🛰️ GPS Auto-Detect</button>
-    </div>
+    <div className="intro-steps" aria-label="How it works"><span><b>01</b> Capture</span><i></i><span><b>02</b> Check</span><i></i><span><b>03</b> Review</span></div>
   </section>
 
-  
-  <section className="metrics-ribbon">
-    <div className="metric-card">
-      <span className="metric-title" id="lblTotalScanned">Total Products Scanned</span>
-      <span className="metric-val" id="totalChecksCount">0</span>
-    </div>
-    <div className="metric-card">
-      <span className="metric-title" id="lblCompliant">Compliant Commodities</span>
-      <span className="metric-val text-success" id="compliantCount">0</span>
-    </div>
-    <div className="metric-card">
-      <span className="metric-title" id="lblViolations">Violations Detected</span>
-      <span className="metric-val text-danger" id="violationCount">0</span>
-    </div>
-    <div className="metric-card">
-      <span className="metric-title">Dispatched Notices</span>
-      <span className="metric-val text-warning" id="complaintsCount">0</span>
-    </div>
-  </section>
+  <main className="dashboard-grid" id="workspace">
+    <section className="panel upload-panel" id="guideStepUpload">
+      <div className="panel-header-row">
+        <div>
+          <span className="section-kicker">01 / CAPTURE</span>
+          <h2 className="panel-title" id="lblUploadTitle">Product Evidence Capture</h2>
+          <p className="panel-subtitle" id="lblUploadSub">Upload packaging photo or capture via live camera.</p>
+        </div>
+        <div className="input-toggle">
+          <button id="modeUploadBtn" className="toggle-btn active">File Upload</button>
+          <button id="modeCameraBtn" className="toggle-btn">Live Camera</button>
+        </div>
+      </div>
 
-  
+      <div className="upload-zone" id="dropZone" role="button" tabIndex={0} aria-label="Add package photos" aria-describedby="lblDropHint">
+        <div className="zone-icon"><ScanIcon /></div>
+        <strong id="lblDropText">Add your package photos</strong>
+        <span id="lblDropHint">Choose photos or drop them here · JPG, PNG, WEBP</span>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden />
+      </div>
+
+      <p className="photo-guidance"><span className="photo-count" id="photoCount">0 / 8</span> Add the front, back and sides of one package.</p>
+      <div id="photoList" className="photo-list" aria-live="polite"></div>
+      <div className="camera-zone" id="cameraContainer" style={{"display": "none"}}>
+        <video id="videoFeed" autoPlay playsInline></video>
+        <button id="captureBtn" className="btn-capture">📸 Snap Product Frame</button>
+      </div>
+
+      <div className="form-row ocr-engine-row">
+        <div className="engine-heading"><span id="ocrEngineLabel">Choose your reader</span><small>Two engines. One clearer read.</small></div>
+        <div className="input-toggle" role="group" aria-labelledby="ocrEngineLabel">
+          <button type="button" id="paddleOcrBtn" data-ocr-engine="paddleocr" className="toggle-btn" aria-pressed="false">PaddleOCR</button>
+          <button type="button" id="tesseractOcrBtn" data-ocr-engine="tesseract" className="toggle-btn" aria-pressed="false">Tesseract OCR</button>
+          <button type="button" id="hybridOcrBtn" data-ocr-engine="hybrid" className="toggle-btn active" aria-pressed="true" aria-label="Both PaddleOCR and Tesseract">Both</button>
+        </div>
+      </div>
+
+      <details className="scan-settings" id="scanSettings">
+        <summary><span><strong>Scan settings</strong><small>Category, location &amp; label area</small></span><span className="details-chevron" aria-hidden="true">⌄</span></summary>
+        <div className="scan-settings-content">
   <section className="filter-ribbon">
     <div className="filter-group">
-      <label>Commodity Archetype:</label>
+      <label htmlFor="categoryFilter">Product category</label>
       <select id="categoryFilter" className="filter-select">
         <option value="FOOD">Packaged Groceries & Grains (Ravva, Atta, Rice, Pulses)</option>
         <option value="DRINKS">Beverages & Bottled Drinks (Thums Up, Coke, Juices, Water)</option>
@@ -199,7 +221,7 @@ export default function Page() {
     </div>
 
     <div className="filter-group">
-      <label>Audit Status:</label>
+      <label htmlFor="statusFilter">History status</label>
       <select id="statusFilter" className="filter-select">
         <option value="ALL">All Scans</option>
         <option value="FAIL">Flagged Violations Only</option>
@@ -208,8 +230,41 @@ export default function Page() {
     </div>
   </section>
 
-  
-  <section className="presets-ribbon">
+
+  <section className="location-ribbon" id="guideStepLocation">
+    <div className="loc-detect-box">
+      <span className="loc-icon">📍</span>
+      <span id="locStatus">Jurisdiction:</span>
+    </div>
+    <div className="loc-input-fields">
+      <select id="stateDropdown" aria-label="State" className="loc-select"></select>
+      <select id="districtDropdown" aria-label="District" className="loc-select"></select>
+      <input type="text" id="pincodeInput" aria-label="Pincode" inputMode="numeric" maxLength={6} placeholder="Pincode" defaultValue="110001" />
+      <button id="refreshLocationBtn" className="btn-sm-action">🛰️ GPS Auto-Detect</button>
+    </div>
+  </section>
+
+
+      <div className="form-row" id="guideStepArea">
+        <label htmlFor="packageArea" id="lblPdpArea">Principal Display Panel Area (sq. cm):</label>
+        <input type="number" id="packageArea" defaultValue="95.0" step="0.5" min="1" max="5000" />
+      </div>
+
+        </div>
+      </details>
+
+      <div className="preview-wrapper" id="previewContainer" style={{"display": "none"}}>
+        <canvas id="detectionCanvas"></canvas>
+      </div>
+
+      <button id="scanButton" className="btn-primary" disabled>
+        Run Legal Metrology Verification
+      </button>
+
+      <div id="statusBar" className="status-bar" role="status" aria-live="polite">
+        System Standby. Select packaging photo or click a demo preset.
+      </div>
+      <details className="demo-library"><summary>Just exploring? <strong>Try a sample <span aria-hidden="true">↗</span></strong></summary>  <section className="presets-ribbon">
     <div className="presets-label">
       <span>🎯 <strong>1-Click Demo Presets:</strong></span>
     </div>
@@ -242,64 +297,14 @@ export default function Page() {
     </div>
   </section>
 
-  
-  <main className="dashboard-grid" id="workspace">
-    <section className="panel upload-panel" id="guideStepUpload">
-      <div className="panel-header-row">
-        <div>
-          <h2 className="panel-title" id="lblUploadTitle">Product Evidence Capture</h2>
-          <p className="panel-subtitle" id="lblUploadSub">Upload packaging photo or capture via live camera.</p>
-        </div>
-        <div className="input-toggle">
-          <button id="modeUploadBtn" className="toggle-btn active">File Upload</button>
-          <button id="modeCameraBtn" className="toggle-btn">Live Camera</button>
-        </div>
-      </div>
 
-      <div className="upload-zone" id="dropZone">
-        <div className="zone-icon">📷</div>
-        <strong id="lblDropText">Click or Drag Commodity Label Image</strong>
-        <span id="lblDropHint">Supports PNG, JPG, WEBP formats</span>
-        <input type="file" id="fileInput" accept="image/*" multiple hidden />
-      </div>
-
-      <p>Add up to 8 photos of the same package — front, back and sides.</p>
-      <div id="photoList" aria-live="polite" style={{"display": "flex", "flexWrap": "wrap", "gap": "8px", "margin": "12px 0"}}></div>
-      <div className="camera-zone" id="cameraContainer" style={{"display": "none"}}>
-        <video id="videoFeed" autoPlay playsInline></video>
-        <button id="captureBtn" className="btn-capture">📸 Snap Product Frame</button>
-      </div>
-
-      <div className="form-row ocr-engine-row">
-        <span id="ocrEngineLabel">OCR engine</span>
-        <div className="input-toggle" role="group" aria-labelledby="ocrEngineLabel">
-          <button type="button" id="paddleOcrBtn" data-ocr-engine="paddleocr" className="toggle-btn" aria-pressed="false">PaddleOCR</button>
-          <button type="button" id="tesseractOcrBtn" data-ocr-engine="tesseract" className="toggle-btn" aria-pressed="false">Tesseract OCR</button>
-          <button type="button" id="hybridOcrBtn" data-ocr-engine="hybrid" className="toggle-btn active" aria-pressed="true" aria-label="Both PaddleOCR and Tesseract">Both</button>
-        </div>
-      </div>
-
-      <div className="form-row" id="guideStepArea">
-        <label htmlFor="packageArea" id="lblPdpArea">Principal Display Panel Area (sq. cm):</label>
-        <input type="number" id="packageArea" defaultValue="95.0" step="0.5" min="1" max="5000" />
-      </div>
-
-      <div className="preview-wrapper" id="previewContainer" style={{"display": "none"}}>
-        <canvas id="detectionCanvas"></canvas>
-      </div>
-
-      <button id="scanButton" className="btn-primary" disabled>
-        Run Legal Metrology Verification
-      </button>
-
-      <div id="statusBar" className="status-bar">
-        System Standby. Select packaging photo or click a demo preset.
-      </div>
+</details>
     </section>
 
     <section className="panel results-panel" id="guideStepAudit">
       <div className="results-header">
         <div>
+          <span className="section-kicker">02 / YOUR RESULTS</span>
           <h2 className="panel-title" id="lblAuditTitle">PCR 2011 Compliance Audit</h2>
           <div className="badge-row">
             <span id="caseIdBadge" className="case-badge">Case ID: Unassigned</span>
@@ -317,10 +322,10 @@ export default function Page() {
       </div>
 
       <div id="complianceVerdict" className="verdict-banner">
-        Audit Pending — Run scan or select 1-click demo preset above.
+        Your label story starts here. Add photos and run a scan to see your review.
       </div>
 
-      
+
       <div id="detectedSymbolsBox" className="symbols-card" style={{"display": "none"}}>
         <div className="symbols-title">🛡️ Detected Regulatory Marks & Symbols:</div>
         <div className="symbols-chips" id="symbolsChipsList"></div>
@@ -330,7 +335,7 @@ export default function Page() {
       <LanguageTools apiUrl={apiUrl} />
     </section>
 
-    
+
     <section className="panel repository-panel" id="repositorySection" style={{"display": "none"}}>
       <div className="results-header">
         <div>
@@ -367,12 +372,35 @@ export default function Page() {
     </section>
   </main>
 
-  
+  <details className="activity-overview"><summary>Your activity <span aria-hidden="true">⌄</span></summary>  <section className="metrics-ribbon">
+    <div className="metric-card">
+      <span className="metric-title" id="lblTotalScanned">Total Products Scanned</span>
+      <span className="metric-val" id="totalChecksCount">0</span>
+    </div>
+    <div className="metric-card">
+      <span className="metric-title" id="lblCompliant">Compliant Commodities</span>
+      <span className="metric-val text-success" id="compliantCount">0</span>
+    </div>
+    <div className="metric-card">
+      <span className="metric-title" id="lblViolations">Violations Detected</span>
+      <span className="metric-val text-danger" id="violationCount">0</span>
+    </div>
+    <div className="metric-card">
+      <span className="metric-title">Dispatched Notices</span>
+      <span className="metric-val text-warning" id="complaintsCount">0</span>
+    </div>
+  </section>
+
+
+</details>
+  <footer className="workspace-footer">Built for clearer labels. Findings need human review.</footer>
+
+
   <div className="modal-overlay" id="dispatchNoticeModal" style={{"display": "none"}}>
     <div className="modal-box">
       <div className="modal-header">
         <h3>Prepare a Complaint Draft</h3>
-        <button className="close-modal" id="closeDispatchModal">&times;</button>
+        <button className="close-modal" id="closeDispatchModal" aria-label="Close complaint draft">&times;</button>
       </div>
       <form id="dispatchForm" className="modal-body">
         <p>This prepares a draft only. No email or official complaint is sent. Submit your report through <a href="https://consumerhelpline.gov.in/" target="_blank" rel="noopener">National Consumer Helpline</a>.</p>
@@ -389,12 +417,12 @@ export default function Page() {
     </div>
   </div>
 
-  
+
   <div className="modal-overlay" id="rulesModal" style={{"display": "none"}}>
     <div className="modal-box modal-lg">
       <div className="modal-header">
         <h3 id="rulesModalHeading">Legal Metrology (Packaged Commodities) Rules, 2011 Reference</h3>
-        <button className="close-modal" id="closeRulesModal">&times;</button>
+        <button className="close-modal" id="closeRulesModal" aria-label="Close rules">&times;</button>
       </div>
       <div className="modal-body modal-scroll">
         <ul className="pcr-rules-ref" id="rulesListModalContent"></ul>
@@ -402,12 +430,12 @@ export default function Page() {
     </div>
   </div>
 
-  
+
   <div className="ai-widget-container">
     <div className="ai-chat-window" id="aiChatWindow" style={{"display": "none"}}>
       <div className="chat-header">
         <span>📖 Packaging FAQ Advisor</span>
-        <button className="chat-close" id="chatCloseBtn">&times;</button>
+        <button className="chat-close" id="chatCloseBtn" aria-label="Close advisor">&times;</button>
       </div>
       <div className="chat-chips-bar" id="chatChipsBar">
         <button className="chat-chip" data-query="Can shopkeeper charge extra cooling charges htmlFor chilled soft drinks above MRP?">❄️ Cooling Charges</button>
@@ -419,16 +447,21 @@ export default function Page() {
       </div>
       <div className="chat-messages" id="chatMessages"></div>
       <div className="chat-input-bar">
-        <input type="text" id="chatTextInput" placeholder="Ask about rules, overcharging, stickers, Section 36..." />
+        <input type="text" id="chatTextInput" aria-label="Message to packaging advisor" placeholder="Ask about rules, overcharging, stickers, Section 36..." />
         <button id="chatSendBtn" className="chat-btn">➤</button>
       </div>
     </div>
     <button className="ai-fab" id="aiFab">📖 Packaging Advisor</button>
   </div>
 
-  
 
 
+
+<nav className="mobile-dock" aria-label="Workspace shortcuts">
+    <a href="#guideStepUpload" className="dock-link active"><ScanIcon /><span>Scan</span></a>
+    <a href="#guideStepAudit" className="dock-link"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v16H5V5a2 2 0 0 1 2-2Zm1 5h8m-8 4h8m-8 4h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg><span>Results</span></a>
+    <button type="button" id="mobileAdvisorBtn" className="dock-link" aria-controls="aiChatWindow" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2Zm3 5h8m-8 4h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Advisor</span></button>
+  </nav>
 <ScannerRuntime apiUrl={apiUrl} />
   </>;
 }
