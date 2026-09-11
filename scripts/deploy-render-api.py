@@ -63,7 +63,7 @@ def main():
     checksum = hashlib.sha256(archive).hexdigest()
     env = {"METROLOGY_DATA_DIR": "/data", "TESSERACT_LANG": "eng", "OMP_THREAD_LIMIT": "1", "OPENBLAS_NUM_THREADS": "1", "PYTHONUNBUFFERED": "1", "METROLOGY_BUNDLE_SHA256": checksum, "METROLOGY_SOURCE_COMMIT": commit}
     secrets = [{"name": "metrology-source.b64", "content": source}, {"name": "metrology-bootstrap.py", "content": bootstrap}]
-    payload = {"type": "web_service", "name": NAME, "ownerId": owner, "autoDeploy": "no", "image": {"imagePath": IMAGE, "ownerId": owner}, "envVars": [{"key": key, "value": value} for key, value in env.items()], "secretFiles": secrets, "serviceDetails": {"runtime": "docker", "plan": "free", "region": "singapore", "healthCheckPath": "/api/health", "numInstances": 1, "envSpecificDetails": {"dockerCommand": "python /etc/secrets/metrology-bootstrap.py"}}}
+    payload = {"type": "web_service", "name": NAME, "ownerId": owner, "autoDeploy": "no", "image": {"imagePath": IMAGE, "ownerId": owner}, "envVars": [{"key": key, "value": value} for key, value in env.items()], "secretFiles": secrets, "serviceDetails": {"runtime": "image", "plan": "free", "region": "singapore", "healthCheckPath": "/api/health", "numInstances": 1, "envSpecificDetails": {"dockerCommand": "python /etc/secrets/metrology-bootstrap.py"}}}
     work = ROOT / "work"; work.mkdir(exist_ok=True)
     (work / "render-source.tar.gz").write_bytes(archive)
     print(json.dumps({"commit": commit, "archive_sha256": checksum, "secret_bytes": len(source) + len(bootstrap.encode()), "plan": "free"}), flush=True)
