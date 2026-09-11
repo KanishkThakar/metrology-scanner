@@ -6,22 +6,33 @@ The Vercel project now uses the **Next.js** preset with Root Directory **apps/we
 
 Set production `METROLOGY_API_URL` to the backend HTTPS origin (no `/api` suffix), then deploy. Do not place Sarvam keys in Vercel's public frontend environment. Without a hosted API URL the website retains the unavailable/preview state; a rendered frontend is not proof of working hosted OCR.
 
-## Render backend
+## Render backend — free plan
 
-`Dockerfile.backend` includes native Tesseract, the FastAPI API, Sarvam client and PostgreSQL driver. `render.yaml` uses only the **free** web-service plan in Singapore, as requested. There is no paid disk or paid database. `OMP_THREAD_LIMIT=1` avoids competing Tesseract worker threads on the small CPU.
+Backend origin: **https://metrology-scanner-api.onrender.com**. Service ID: `srv-dahsk4id0e5s738ov9qg` (Singapore). No paid disk or paid database is provisioned.
 
-The prepared backend is already in the private repository. The Render CLI is authenticated. Private repository access must also be granted to the Render GitHub App before a Git deployment can succeed.
+The live service uses an official Python container pinned by digest. The application source is uploaded privately through Render's API as a checksum-verified secret-file bundle. This avoids granting Render access to the GitHub repository. The bundle contains only committed backend/frontend code and demo presets; local databases, reports, user photos and credentials are excluded. The OCR and rule implementations are unchanged. The scan endpoint runs its blocking OCR work in a worker thread, leaving health checks responsive; a second simultaneous scan receives a clear HTTP 429 response to keep memory bounded on the free instance.
 
-1. Connect the private GitHub repository to Render and select the Blueprint or `Dockerfile.backend`.
-2. Keep `METROLOGY_DATA_DIR=/data`; the default database is SQLite in the free instance's temporary filesystem.
-3. Optionally set `DATABASE_URL` for PostgreSQL; images/PDFs still require persistent storage.
-4. Optionally set backend-only `SARVAM_API_KEY` for language and voice.
-5. Wait for `/api/health` to respond successfully, then verify a real multi-photo scan and PDF retrieval.
-6. Add the Render HTTPS URL as Vercel `METROLOGY_API_URL`, redeploy the frontend and test from the public website.
+At startup `scripts/render-runtime-bootstrap.py` installs native Tesseract and Python dependencies pinned to the working local versions, restores the demo images, verifies the pinned `tessdata_best` model's SHA-256 and starts FastAPI. Startup on the free CPU can take several minutes. `OMP_THREAD_LIMIT=1` and `OPENBLAS_NUM_THREADS=1` prevent excess worker threads. Render health checks succeed only once the OCR engine and database are ready.
 
-Free Render servers sleep after inactivity and may take about a minute to wake. The web client keeps the selected photos while connecting and checks that the response is real API health, not Render's loading HTML. **Hosted SQLite records, photos and reports are lost when the free service sleeps, restarts or redeploys. Download reports and history exports before that happens.** The local Developer folder and its original database remain intact. See [Render's free-instance limits](https://render.com/docs/free).
+### Update the deployed API
 
-The advisor remains a scripted FAQ. Complaint handling prepares a draft; it sends no email or official notice. The login is a demo. Add real authenticated per-user access control before collecting personal or confidential data on a public deployment.
+From the clean publishing checkout, commit the intended changes first. The deploy script uploads **HEAD**, so uncommitted files are not published:
+
+```sh
+# Use the project Python environment containing httpx and PyYAML.
+python scripts/deploy-render-api.py --prepare-only
+python scripts/deploy-render-api.py
+```
+
+The script uses the signed-in Render CLI account (or `RENDER_API_KEY`) without printing credentials. It refuses to update a paid service or an unrelated Git-backed service, preserves unrelated environment variables and uploads only its two managed secret files. No GitHub push automatically updates this image-backed Render service; run the script after committing backend changes. `render.yaml` and `Dockerfile.backend` remain available for conventional Git-backed deployment after repository access is connected.
+
+Set Vercel production `METROLOGY_API_URL` to the HTTPS backend origin without `/api`, then redeploy the frontend. The web browser calls Render directly for image uploads and report downloads.
+
+### Free hosting behavior
+
+Free Render instances sleep after inactivity. Their SQLite records, uploaded images and PDFs are lost when the service sleeps, restarts or redeploys. Download reports and export history while the instance is active. Original local data stays in the Developer folder. See [Render's free-instance limits](https://render.com/docs/free).
+
+Built-in language labels, Tesseract scans, PDF generation and the scripted FAQ do not need paid API keys. Sarvam voice and translation need a backend-only `SARVAM_API_KEY`; they remain unavailable until configured. Complaint handling prepares a draft and sends no email or official notice. The existing login is a demo; add authenticated per-user access control before collecting confidential data publicly.
 
 ## Expo mobile
 

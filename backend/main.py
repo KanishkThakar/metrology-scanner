@@ -18,10 +18,11 @@ import uuid
 import hashlib
 import json
 from contextlib import asynccontextmanager
+from threading import BoundedSemaphore
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, File, UploadFile, Form, Depends
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -1346,8 +1347,19 @@ def get_compliance_rules(db: Session = Depends(get_db)):
         } for t in thresholds]
     }
 
-@app.post("/api/scan")
-async def scan_package(
+# Keep heavy image work out of the event loop and bound memory on free hosts.
+_scan_capacity = BoundedSemaphore(1)
+
+def reserve_scan_slot():
+    if not _scan_capacity.acquire(blocking=False):
+        raise HTTPException(status_code=429, detail="Another scan is running. Please wait for it to finish and try again.")
+    try:
+        yield
+    finally:
+        _scan_capacity.release()
+
+@app.post("/api/scan", dependencies=[Depends(reserve_scan_slot)])
+def scan_package(
     file: Optional[UploadFile] = File(None),
     files: Optional[List[UploadFile]] = File(None),
     surface_area: Optional[str] = Form("120.0"),
@@ -1366,7 +1378,7 @@ async def scan_package(
         decoded = []
         total_bytes = 0
         for number, photo in enumerate(photos, 1):
-            content = await photo.read(15 * 1024 * 1024 + 1)
+            content = photo.file.read(15 * 1024 * 1024 + 1)
             total_bytes += len(content)
             if len(content) > 15 * 1024 * 1024 or total_bytes > 60 * 1024 * 1024:
                 return JSONResponse(status_code=413, content={"error": "Use photos under 15 MB each and 60 MB total."})
