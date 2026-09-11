@@ -13,6 +13,7 @@ import * as Sharing from 'expo-sharing';
 import { useAudioPlayer, useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import { categories, createClient, languages, languageCode, validatePhotos, type Capabilities, type Inspection, type Preset, type ScanResult } from '@metrology/core';
 import catalog from '@metrology/core/catalog';
+import BarcodeIdentity from './BarcodeIdentity';
 
 const geography = catalog.indiaGeography as Record<string,string[]>;
 const dictionaries = catalog.i18n as Record<string,typeof catalog.i18n.en>;
@@ -267,6 +268,7 @@ function MobileApp() {
             {result.symbols?.length>0&&<Text style={textStyle}>Detected marks: {result.symbols.map(s=>s.name).join(' • ')}</Text>}
             {Object.entries(result.rules).map(([key,rule])=><View key={key} style={[styles.rule,{borderColor:rule.status==='FAIL'?'#dc2626':rule.status==='REVIEW'?'#e9a23b':'#16a34a'}]}><Text style={[styles.label,textStyle]}>{(dict.rules as Record<string,string>)[key]||key} — {rule.status}</Text><Text selectable style={textStyle}>{rule.detected_value?`Extracted: ${rule.detected_value}`:'Not Detected'}</Text><Text style={textStyle}>{rule.explanation}</Text>{rule.error_code&&<Text style={textStyle}>{rule.status==='REVIEW'?'Inspection notice':'Violation'}: {rule.error_code}{rule.status==='FAIL'&&rule.penalty_clause?` (${rule.penalty_clause})`:''}</Text>}{rule.ocr_evidence?.map((e,i)=><View key={i}><Text style={[styles.label,textStyle]}>Price OCR readings • Photo {e.photo_number}</Text>{e.readings.map((r,j)=><Text key={j} selectable style={textStyle}>{r.method}: {r.text}</Text>)}</View>)}</View>)}
             <Text selectable style={textStyle}>Evidence SHA-256: {result.evidence_sha256}</Text>
+            <BarcodeIdentity key={`${apiUrl}:${result.inspection_id}`} api={api} caseId={result.inspection_id} color={color}/>
             <Button title="Translate audit" disabled={busy||!capabilities?.configured} onPress={()=>void task(async()=>{const source=Object.values(result.rules).map(r=>`${r.key}: ${r.status}\n${r.detected_value||'Not detected'}\n${r.explanation||''}`).join('\n\n');const chunks=source.match(/[\s\S]{1,1900}/g)||[];const output=[];for(const chunk of chunks)output.push((await api.translate(chunk,'en',language)).translated_text);setTranslated(output.join('\n'));setStatus('Translation is a reading aid. Original audit results are unchanged.');})}/>
             {translated?<TextInput multiline accessibilityLabel="Audit translation" value={translated} onChangeText={setTranslated} style={inputStyle}/>:null}
             <Button title="Read aloud" disabled={busy||!translated||!capabilities?.speech_languages.includes(languageCode(language))} onPress={()=>void readAloud()}/>

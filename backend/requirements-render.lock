@@ -184,3 +184,6 @@ websockets==16.1.1
     # via
     #   -c work/current-python-versions.txt
     #   uvicorn
+
+# Barcode decoding, CPU only; no external OCR or GS1 call.
+zxing-cpp==3.0.0

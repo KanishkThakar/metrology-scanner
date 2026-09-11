@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import path from 'node:path';
+test('Expo barcode comparison uses the backend and survives leaving Results',async({page})=>{
+  test.setTimeout(180000);await page.setViewportSize({width:390,height:844});
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript((api)=>{localStorage.setItem('metrology_api',api);localStorage.setItem('doca_tour_done','true');},process.env.TEST_API_URL||'http://127.0.0.1:8000');
+  await page.goto(process.env.TEST_MOBILE_URL||'http://127.0.0.1:8082');
+  await page.getByRole('textbox',{name:'Mobile, email or officer ID'}).fill('barcode-mobile@example.com');
+  await page.getByRole('button',{name:'Enter Citizen Mode',exact:true}).click();
+  await page.getByRole('button',{name:'PaddleOCR',exact:true}).click();
+  const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Add photos',exact:true}).click();await(await chooser).setFiles(path.resolve('work/barcode-fixture.png'));
+  await page.getByRole('button',{name:'Run Legal Metrology Verification',exact:true}).click();
+  const selected=page.getByRole('button',{name:'9506000140445 · Selected',exact:true});await expect(selected).toBeVisible({timeout:90000});
+  await page.getByRole('button',{name:'Compare GS1 result with label',exact:true}).click();
+  await page.getByRole('textbox',{name:'GTIN shown in GS1 result',exact:true}).fill('9506000140445');
+  await page.getByRole('textbox',{name:'Registered company / licensee',exact:true}).fill('Example Foods Private Limited');
+  await page.getByRole('checkbox').click();await page.getByRole('button',{name:'Compare with label',exact:true}).click();
+  await expect(page.getByText('9506000140445 · Available wording found',{exact:true})).toBeVisible();
+  await page.getByRole('tab',{name:'Scan',exact:true}).click();await page.getByRole('tab',{name:'Results',exact:true}).click();
+  await expect(page.getByText('9506000140445 · Available wording found',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'View captured label text',exact:true}).click();
+  await expect(page.getByText('Photo 1',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
+  await selected.scrollIntoViewIfNeeded();await page.screenshot({path:'work/barcode-mobile.png'});expect(errors).toEqual([]);
+});

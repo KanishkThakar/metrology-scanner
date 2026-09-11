@@ -30,6 +30,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text as sql_text
+from barcode_identity import router as barcode_identity_router
 from language import router as language_router
 import cv2
 import numpy as np
@@ -91,6 +92,7 @@ app = FastAPI(
 )
 
 app.include_router(language_router)
+app.include_router(barcode_identity_router)
 
 # Open CORS to eliminate loopback and browser connection errors across origins
 app.add_middleware(

@@ -1145,6 +1145,7 @@ export function initializeScanner(configuredApiUrl = "") {
   }
 
   function renderLiveResults(data) {
+    window.dispatchEvent(new CustomEvent('nyayalens:inspection', {detail: {inspection_id: data.inspection_id}}));
     const dict = i18n[activeLanguage] || i18n.en;
     const status = data.compliance_status || (data.is_compliant ? "PASS" : "FAIL");
 
@@ -1740,6 +1741,14 @@ export function initializeScanner(configuredApiUrl = "") {
                        "<td><span class='badge " + (item.status === "PASS" ? "badge-pass" : "badge-fail") + "'>" + escapeHtml(item.status) + "</span></td>" +
                        "<td>" + escapeHtml(item.violations) + "</td>" +
                        "<td>" + (item.pdf_url ? "<a href='" + escapeHtml(API_BASE + item.pdf_url) + "' target='_blank' class='btn-secondary' style='padding: 4px 8px; font-size: 11px;'>📄 PDF</a>" : "") + "</td>";
+        const identityButton = document.createElement('button');
+        identityButton.className = 'btn-secondary';
+        identityButton.textContent = 'Barcode identity';
+        identityButton.addEventListener('click', () => {
+          window.dispatchEvent(new CustomEvent('nyayalens:inspection', {detail: {inspection_id: item.id}}));
+          document.getElementById('barcodeIdentity')?.scrollIntoView({behavior:'smooth',block:'start'});
+        });
+        tr.lastElementChild.appendChild(identityButton);
         historyTableBody.appendChild(tr);
       }
     }

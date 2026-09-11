@@ -1292,3 +1292,30 @@ body:has(#roleGatewayModal[style*="flex"]), body:has(.side-drawer.open), body:ha
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Barcode identity: a source-led review alongside the existing audit. */
+.barcode-identity { border:1px solid var(--border-subtle); border-radius:18px; padding:24px; display:grid; gap:18px; min-width:0; color:var(--text-main); }
+.barcode-title { display:flex; gap:16px; align-items:center; }
+.barcode-title svg { width:40px; flex-shrink:0; color:var(--gov-blue); }
+.barcode-title h3 { font-size:22px; font-weight:650; letter-spacing:-.7px; margin-top:6px; }
+.barcode-identity p { margin:0; line-height:1.65; font-size:14px; }
+.barcode-identity small,.barcode-disclaimer { color:var(--text-muted); line-height:1.6; font-size:12px!important; }
+.barcode-note { padding:12px 14px; background:var(--bg-surface-elevated); border-radius:10px; }
+.barcode-code,.barcode-lookup { display:grid; gap:10px; }
+.barcode-code label,.barcode-lookup strong { font-size:13px; font-weight:700; }
+.barcode-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.barcode-identity .btn-secondary { min-height:44px; white-space:normal; text-align:center; }
+.barcode-identity input:not([type=checkbox]),.barcode-identity select { width:100%; max-width:100%; min-width:0; min-height:46px; border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px; background:var(--bg-surface); color:var(--text-main); font:inherit; font-size:16px; }
+.barcode-code select { font-family:monospace; font-size:14px; }
+.barcode-identity summary { cursor:pointer; min-height:44px; padding:12px 0; font-size:14px; font-weight:650; }
+.barcode-entry { border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle); }
+.barcode-entry fieldset { border:0; padding:10px 0 20px; margin:0; display:grid; gap:10px; min-width:0; }
+.barcode-entry label { font-size:13px; font-weight:600; }
+.barcode-confirm { display:flex; align-items:flex-start; gap:10px; padding:12px 0; line-height:1.6; }
+.barcode-confirm input { flex-shrink:0; width:19px; height:19px; margin-top:2px; accent-color:var(--gov-blue); }
+.barcode-review { border:1px solid var(--border-subtle); border-radius:14px; padding:18px; display:grid; gap:14px; min-width:0; overflow-wrap:anywhere; }
+.barcode-review h4 { font-size:17px; }
+.barcode-comparison { border-top:1px solid var(--border-subtle); padding-top:14px; display:grid; gap:8px; }
+.barcode-status { color:var(--gov-blue); font-size:12px; font-weight:700; }
+.barcode-identity pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.65; margin:8px 0; max-height:240px; overflow:auto; background:var(--bg-surface-elevated); padding:12px; border-radius:8px; }
+@media(max-width:700px) { .barcode-identity { padding:18px 14px; gap:16px; } .barcode-title { gap:12px; } .barcode-title h3 { font-size:20px; } .barcode-review { padding:14px; } .barcode-actions>* { flex:1 1 140px; } }

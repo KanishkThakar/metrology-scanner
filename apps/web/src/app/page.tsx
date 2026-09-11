@@ -1,5 +1,6 @@
 import ScannerRuntime from '../components/ScannerRuntime';
 import LanguageTools from '../components/LanguageTools';
+import BarcodeIdentity from '../components/BarcodeIdentity';
 
 function ScanIcon() {
   return <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3H5a2 2 0 0 0-2 2v5m19-7h5a2 2 0 0 1 2 2v5M3 22v5a2 2 0 0 0 2 2h5m12 0h5a2 2 0 0 0 2-2v-5M10 11h12M10 16h12M10 21h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>;
@@ -337,6 +338,7 @@ export default function Page() {
       </div>
 
       <div className="rules-container" id="rulesList"></div>
+      <BarcodeIdentity apiUrl={apiUrl} />
       <LanguageTools apiUrl={apiUrl} />
     </section>
 
