@@ -1,0 +1,50 @@
+import { test, expect } from '@playwright/test';
+import path from 'node:path';
+import { writeFileSync } from 'node:fs';
+const web = process.env.TEST_WEB_URL || 'http://127.0.0.1:3001';
+const api = process.env.TEST_API_URL || 'http://127.0.0.1:8000';
+test.use({actionTimeout: 15000});
+
+test('all three OCR choices execute and preserve the 99 rupee photo', async ({ page, request }) => {
+  test.setTimeout(240000);
+  const errors: string[] = [];
+  const results: unknown[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.addInitScript(() => localStorage.setItem('doca_tour_done', 'true'));
+  await page.goto(web);
+  await expect(page.locator('#backendStatusPill')).toContainText('Online');
+  await page.locator('#citizenIdentityInput').fill('ocr-modes-test@example.com');
+  await page.locator('#citizenLoginForm button').click();
+  await expect(page.locator('[data-ocr-engine]')).toHaveCount(3);
+  await expect(page.locator('#hybridOcrBtn')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#tesseractOcrBtn').click();
+  await page.reload();
+  await expect(page.locator('#tesseractOcrBtn')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#backendStatusPill')).toContainText('Online');
+  await page.locator('#citizenIdentityInput').fill('ocr-modes-test@example.com');
+  await page.locator('#citizenLoginForm button').click();
+  await expect(page.locator('#roleGatewayModal')).toBeHidden();
+  await page.locator('#fileInput').setInputFiles(path.resolve('work/migration-coffee.jpg'));
+  for (const mode of ['paddleocr', 'tesseract', 'hybrid']) {
+    await page.locator(`[data-ocr-engine="${mode}"]`).click();
+    const response = page.waitForResponse(r => r.url() === api + '/api/scan' && r.request().method() === 'POST');
+    await page.locator('#scanButton').click();
+    await expect(page.locator('#paddleOcrBtn')).toBeDisabled();
+    const http = await response;
+    expect(http.status()).toBe(200);
+    const scan = await http.json();
+    expect(scan.ocr_engine).toBe(mode);
+    expect(scan.rules.mrp.detected_value).toBe('₹ 99.00');
+    expect(scan.rules.mrp.status).toBe('REVIEW');
+    await expect(page.locator('#statusBar')).toContainText('Audit complete');
+    await expect(page.locator('#hybridOcrBtn')).toBeEnabled();
+    const pdf = await request.get(api + scan.report_pdf_url);
+    expect(pdf.ok()).toBeTruthy();
+    expect((await pdf.body()).subarray(0, 4).toString()).toBe('%PDF');
+    results.push({mode, seconds: scan.analysis_seconds, mrp: scan.rules.mrp.detected_value, status: scan.rules.mrp.status});
+  }
+  await page.locator('#guideStepUpload').scrollIntoViewIfNeeded();
+  await page.screenshot({path: 'work/ocr-engine-choice.png', fullPage: true});
+  writeFileSync('work/ocr-engine-choice-results.json', JSON.stringify({web, api, results, errors}, null, 2));
+  expect(errors).toEqual([]);
+});

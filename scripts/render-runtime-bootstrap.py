@@ -44,6 +44,7 @@ def main():
     shutil.rmtree("/var/lib/apt/lists", ignore_errors=True)
     print("[setup] Installing pinned Python dependencies", flush=True)
     subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "--no-cache-dir", "--only-binary=:all:", "-r", str(app_dir / "backend/requirements-render.lock")], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "--no-cache-dir", "--no-deps", "--only-binary=:all:", "-r", str(app_dir / "backend/requirements-paddle.txt")], check=True)
     print("[setup] Verifying the OCR price-reading model", flush=True)
     model = app_dir / "backend/tessdata/eng.traineddata"
     model.parent.mkdir(parents=True, exist_ok=True)

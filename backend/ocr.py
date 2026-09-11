@@ -8,6 +8,7 @@ from collections import Counter
 import cv2
 import numpy as np
 import pytesseract
+from ocr_cache import cached_ocr
 
 DATA_DIR = Path(os.environ.get("TESSERACT_DATA_DIR", Path(__file__).parent / "tessdata"))
 MODEL_CONFIG = "--tessdata-dir " + shlex.quote(str(DATA_DIR)) if (DATA_DIR / "eng.traineddata").exists() else ""
@@ -135,7 +136,7 @@ def _recover_faint_text(gray, lines):
     return sorted(lines, key=lambda item:(item["bbox"][0][1],item["bbox"][0][0]))
 
 
-def extract_text(image):
+def _extract_text_uncached(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = gray.shape
     best, best_score = [], -1
@@ -165,3 +166,9 @@ def extract_text(image):
         y0, y1 = min(p[1] for p in points), max(p[1] for p in points)
         item["bbox"] = [[x0,y0], [x1,y0], [x1,y1], [x0,y1]]
     return [item["text"] for item in best], best
+
+
+def extract_text(image):
+    image = np.ascontiguousarray(image)
+    namespace = ("tesseract-v1", os.getenv("TESSERACT_LANG", "eng"), MODEL_CONFIG)
+    return cached_ocr(image, namespace, lambda: _extract_text_uncached(image))

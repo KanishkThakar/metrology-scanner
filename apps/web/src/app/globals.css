@@ -983,3 +983,8 @@ body {
 .language-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
 .language-tools textarea { width:100%; box-sizing:border-box; padding:12px; font:inherit; margin-top:8px; border:1px solid var(--border-active); border-radius:8px; background:var(--bg-surface); color:var(--text-main); }
 .language-tools audio { display:block; max-width:100%; margin-top:10px; }
+
+.ocr-engine-row { gap: 12px; flex-wrap: wrap; }
+.ocr-engine-row .toggle-btn { min-height: 38px; padding: 8px 14px; }
+.ocr-engine-row .toggle-btn:disabled { opacity: .65; cursor: wait; }
+.ocr-engine-row .toggle-btn:focus-visible { outline: 2px solid var(--gov-blue); outline-offset: 2px; }

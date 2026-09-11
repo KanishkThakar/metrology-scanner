@@ -616,6 +616,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("detectionCanvas");
   const ctx = canvas ? canvas.getContext("2d") : null;
   const packageAreaInput = document.getElementById("packageArea");
+  const ocrEngineButtons = Array.from(document.querySelectorAll('[data-ocr-engine]'));
+  const savedOCREngine = localStorage.getItem('metrology_ocr_engine');
+  let selectedOCREngine = ['paddleocr', 'tesseract', 'hybrid'].includes(savedOCREngine) ? savedOCREngine : 'hybrid';
+  function renderOCREngineChoice() {
+    ocrEngineButtons.forEach(button => {
+      const selected = button.dataset.ocrEngine === selectedOCREngine;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+      button.disabled = scanning;
+    });
+  }
+  ocrEngineButtons.forEach(button => button.addEventListener('click', () => {
+    if (scanning) return;
+    selectedOCREngine = button.dataset.ocrEngine;
+    localStorage.setItem('metrology_ocr_engine', selectedOCREngine);
+    renderOCREngineChoice();
+  }));
+  renderOCREngineChoice();
+
 
   const modeUploadBtn = document.getElementById("modeUploadBtn");
   const modeCameraBtn = document.getElementById("modeCameraBtn");
@@ -1333,10 +1352,16 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPhotoList();
 
       scanButton.disabled = true;
-      updateStatusBar("Analyzing packaging text through Tesseract OCR & PCR 2011 rules...");
+      renderOCREngineChoice();
+      const engineLabel = ({paddleocr: 'PaddleOCR', tesseract: 'Tesseract OCR', hybrid: 'PaddleOCR + Tesseract'})[selectedOCREngine];
+      const scanStarted = performance.now();
+      const showElapsed = () => updateStatusBar(engineLabel + ' is reading ' + selectedFiles.length + ' photo(s)… ' + Math.floor((performance.now() - scanStarted) / 1000) + 's');
+      showElapsed();
+      const scanTimer = setInterval(showElapsed, 1000);
 
       const fd = new FormData();
       selectedFiles.forEach(file => fd.append("files", file));
+      fd.append("ocr_engine", selectedOCREngine);
       fd.append("surface_area", packageAreaInput ? packageAreaInput.value : "95.0");
       fd.append("user_role", currentSession.role);
       fd.append("user_identifier", currentSession.userIdentifier);
@@ -1349,7 +1374,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(API_BASE + "/api/scan", { method: "POST", body: fd });
         if (!res.ok) {
           const failure = await res.json().catch(() => ({}));
-          throw new Error(failure.error || "Server returned HTTP " + res.status);
+          throw new Error(failure.error || failure.detail || "Server returned HTTP " + res.status);
         }
 
         const data = await res.json();
@@ -1425,14 +1450,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateMetrics();
         renderHistoryTable();
-        updateStatusBar("Audit complete. Case " + caseId + " persisted to database.");
+        clearInterval(scanTimer);
+        updateStatusBar('Audit complete · ' + engineLabel + ' · ' + ((performance.now() - scanStarted) / 1000).toFixed(1) + 's. Case ' + caseId + ' persisted to database.');
 
       } catch (e) {
         console.error("[SCAN ERROR]", e);
         updateStatusBar("Verification Failed: " + e.message + ". Active gateway: " + API_BASE);
         alert("Inspection Error: " + e.message);
       } finally {
+        clearInterval(scanTimer);
         scanning = false;
+        renderOCREngineChoice();
         renderPhotoList();
         scanButton.disabled = !selectedFiles.length || !backendOnline;
       }

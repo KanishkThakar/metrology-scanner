@@ -977,3 +977,7 @@ body {
   .ai-widget-container { bottom: 16px; right: 16px; }
   .ai-chat-window { width: calc(100vw - 32px); height: 440px; right: -6px; }
 }
+.ocr-engine-row { gap: 12px; flex-wrap: wrap; }
+.ocr-engine-row .toggle-btn { min-height: 38px; padding: 8px 14px; }
+.ocr-engine-row .toggle-btn:disabled { opacity: .65; cursor: wait; }
+.ocr-engine-row .toggle-btn:focus-visible { outline: 2px solid var(--gov-blue); outline-offset: 2px; }

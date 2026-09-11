@@ -270,6 +270,15 @@ export default function Page() {
         <button id="captureBtn" className="btn-capture">📸 Snap Product Frame</button>
       </div>
 
+      <div className="form-row ocr-engine-row">
+        <span id="ocrEngineLabel">OCR engine</span>
+        <div className="input-toggle" role="group" aria-labelledby="ocrEngineLabel">
+          <button type="button" id="paddleOcrBtn" data-ocr-engine="paddleocr" className="toggle-btn" aria-pressed="false">PaddleOCR</button>
+          <button type="button" id="tesseractOcrBtn" data-ocr-engine="tesseract" className="toggle-btn" aria-pressed="false">Tesseract OCR</button>
+          <button type="button" id="hybridOcrBtn" data-ocr-engine="hybrid" className="toggle-btn active" aria-pressed="true" aria-label="Both PaddleOCR and Tesseract">Both</button>
+        </div>
+      </div>
+
       <div className="form-row" id="guideStepArea">
         <label htmlFor="packageArea" id="lblPdpArea">Principal Display Panel Area (sq. cm):</label>
         <input type="number" id="packageArea" defaultValue="95.0" step="0.5" min="1" max="5000" />

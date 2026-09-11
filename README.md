@@ -13,13 +13,14 @@ short_description: Legal Metrology PCR 2011 Statutory Compliance AI Engine
 
 # Metrology platform stack
 
-The current application uses Next.js 16 for web, Expo SDK 57 / React Native for mobile, FastAPI / Python for the API, Tesseract for OCR, SQLite by default or PostgreSQL, and optional Sarvam speech and translation APIs.
+The current application uses Next.js 16 for web, Expo SDK 57 / React Native for mobile, FastAPI / Python for the API, PaddleOCR and Tesseract for OCR, SQLite by default or PostgreSQL, and optional Sarvam speech and translation APIs.
 
 See [STACK_MIGRATION.md](STACK_MIGRATION.md) for architecture, setup, feature parity, database migration and verification. Existing scan data stays in `backend/inspections.db`, `backend/uploads` and `backend/reports` unless a persistent data directory is configured. The previous frontend remains in `FRONTEND` for rollback.
 
 ```sh
 npm ci
 uv pip install --python .venv/bin/python -r backend/requirements.txt
+uv pip install --python .venv/bin/python --no-deps -r backend/requirements-paddle.txt
 npm run api
 # In another terminal:
 npm run dev -- --port 3001
@@ -29,6 +30,20 @@ npm run mobile -- --lan
 
 Open the Next.js app on port 3001 and the API on port 8000. Native phones need your computer's LAN API address or an HTTPS hosted API, configured in the app's Settings. Sarvam requires a backend-only `SARVAM_API_KEY`; built-in language labels and scans work without it.
 
+
+## Choose the OCR engine
+
+The scanner has three buttons. The browser remembers the selected mode:
+
+- **PaddleOCR**: PP-OCRv4 mobile detection, line orientation and recognition through ONNX Runtime on CPU. Single-engine price readings remain reviewable.
+- **Tesseract OCR**: the existing multi-pass recognition and price-crop checks.
+- **Both** (default): PaddleOCR reads the label, then Tesseract cross-checks currency regions. Conflicting or weak price readings remain `REVIEW`.
+
+Detection uses a bounded preview; recognition reads crops from the original image. Models load once per server process. Repeating an identical photo reuses a bounded, ten-minute OCR cache; each scan still runs rule checks and creates its own inspection and PDF. Cached detections are copied before adding photo offsets. The scanner shows real elapsed time during analysis.
+
+The API accepts multipart `ocr_engine=paddleocr`, `tesseract` or `hybrid` and returns `ocr_engine` plus `analysis_seconds`. Omitting the parameter retains Tesseract for existing API/mobile clients. The optional Paddle runtime is installed without its GUI OpenCV dependency because the main requirements already install headless OpenCV; `scripts/install-backend.py` performs both steps.
+
+Paddle models are bundled in pinned `rapidocr-onnxruntime==1.4.4`; scans do not call a hosted OCR service. Model sources: [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) and [RapidOCR](https://github.com/RapidAI/RapidOCR).
 
 # National Legal Metrology AI Enforcement Gateway
 ### Smart India Hackathon 2026 — Problem Statement #26034
@@ -149,6 +164,7 @@ Open a terminal in the project directory:
 brew install tesseract  # macOS; Linux: apt-get install tesseract-ocr
 uv venv --python 3.11 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
+uv pip install --python .venv/bin/python --no-deps -r requirements-paddle.txt
 source .venv/bin/activate
 cd backend
 ```

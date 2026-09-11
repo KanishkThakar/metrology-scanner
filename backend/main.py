@@ -19,7 +19,8 @@ import hashlib
 import json
 from contextlib import asynccontextmanager
 from threading import BoundedSemaphore
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Literal
+from time import perf_counter
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
@@ -33,6 +34,7 @@ from language import router as language_router
 import cv2
 import numpy as np
 from ocr import ENGINE_NAME, init_ocr_engine, extract_text
+from paddle_engine import PADDLE_AVAILABLE, PADDLE_MODEL, init_paddle_engine, extract_paddle
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -62,6 +64,8 @@ RESET = "\033[0m"
 async def lifespan(app: FastAPI):
     seed_database()
     init_ocr_engine()
+    if PADDLE_AVAILABLE:
+        init_paddle_engine()
     print(f"\n{CYAN}{BOLD}{'='*75}{RESET}")
     print(f"{CYAN}{BOLD}⚖️   GOVERNMENT OF INDIA — DEPARTMENT OF CONSUMER AFFAIRS{RESET}")
     print(f"{CYAN}{BOLD}    LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011{RESET}")
@@ -124,11 +128,13 @@ def health_check():
         "statutory_act": "Legal Metrology Act, 2009 & Packaged Commodities Rules, 2011",
         "evidence_framework": "Section 63 Bharatiya Sakshya Adhiniyam, 2023 / Section 65B Indian Evidence Act",
         "ocr_engine": ocr_engine_name,
+        "ocr_engines": {"tesseract": True, "paddleocr": PADDLE_AVAILABLE, "hybrid": PADDLE_AVAILABLE},
+        "paddle_model": PADDLE_MODEL if PADDLE_AVAILABLE else None,
         "database": engine.dialect.name,
         "language_provider": "Sarvam",
         "language_configured": bool(os.getenv("SARVAM_API_KEY", "").strip()),
-        "swagger_docs": "http://127.0.0.1:8000/docs",
-        "redoc_docs": "http://127.0.0.1:8000/redoc",
+        "swagger_docs": "/docs",
+        "redoc_docs": "/redoc",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -1369,9 +1375,13 @@ def scan_package(
     district: Optional[str] = Form("General"),
     pincode: Optional[str] = Form("110001"),
     category: Optional[str] = Form("FOOD"),
+    ocr_engine: Literal["tesseract", "paddleocr", "hybrid"] = Form("tesseract"),
     db: Session = Depends(get_db)
 ):
+    started = perf_counter()
     try:
+        if ocr_engine != "tesseract" and not PADDLE_AVAILABLE:
+            return JSONResponse(status_code=503, content={"error": "PaddleOCR is unavailable. Select Tesseract OCR and try again."})
         photos = ([file] if file else []) + (files or [])
         if not 1 <= len(photos) <= 8:
             return JSONResponse(status_code=400, content={"error": "Attach between 1 and 8 photos of the same package."})
@@ -1396,7 +1406,8 @@ def scan_package(
         offset = 0
         batch_id = str(uuid.uuid4())
         for number, (content, img) in enumerate(decoded, 1):
-            lines, detections = extract_text(img)
+            lines, detections = (extract_text(img) if ocr_engine == "tesseract" else
+                                 extract_paddle(img, verify_prices=ocr_engine == "hybrid"))
             if not lines:
                 return JSONResponse(status_code=422, content={"error": f"No readable text in photo {number}. Remove it or upload a sharper label photo."})
             symbols = detect_symbols(img, " ".join(lines))
@@ -1519,6 +1530,8 @@ def scan_package(
 
         return {
             "inspection_id": int(db_id),
+            "ocr_engine": ocr_engine,
+            "analysis_seconds": round(perf_counter() - started, 3),
             "case_id": case_id_str,
             "user_role": str(user_role),
             "user_identifier": str(user_identifier),

@@ -1,0 +1,2 @@
+# Install with --no-deps: requirements.txt provides CPU dependencies and headless OpenCV.
+rapidocr-onnxruntime==1.4.4
