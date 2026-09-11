@@ -5,7 +5,7 @@ import './globals.css';
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-interface', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Metrology | Know your label',
+  title: 'NyayaLens | Know your label',
   description: 'Read packaging with PaddleOCR and Tesseract, review the evidence, and save your inspection report.',
 };
 

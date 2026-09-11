@@ -5,6 +5,11 @@ function ScanIcon() {
   return <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3H5a2 2 0 0 0-2 2v5m19-7h5a2 2 0 0 1 2 2v5M3 22v5a2 2 0 0 0 2 2h5m12 0h5a2 2 0 0 0 2-2v-5M10 11h12M10 16h12M10 21h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>;
 }
 
+// Reuse the NyayaLens brand mark: three bars crossed by the cyan sight line.
+function NyayaLensMark() {
+  return <svg viewBox="0 0 30 31" fill="none" aria-hidden="true"><path d="M0 19h3v12H0zM7 4h3v27H7zM14 12h3v19h-3z" fill="currentColor" /><path d="M8 25h22" stroke="#61CFD8" strokeWidth="1" /></svg>;
+}
+
 export default function Page() {
   const apiUrl = process.env.METROLOGY_API_URL || process.env.NEXT_PUBLIC_API_URL || '';
   return <>
@@ -32,9 +37,9 @@ export default function Page() {
     <div className="gov-auth-container">
       <div className="gov-auth-pillar">
         <div className="emblem-circle">
-          <div className="gov-seal-icon"><ScanIcon /></div>
+          <div className="gov-seal-icon"><NyayaLensMark /></div>
         </div>
-        <span className="auth-eyebrow">METROLOGY / LABEL INTELLIGENCE</span>
+        <span className="auth-eyebrow">NYAYALENS / LABEL INTELLIGENCE</span>
         <h2>A little clarity.<br /><em>On every label.</em></h2>
         <p>Capture your package. Read the details. Build a clearer picture.</p>
         <span className="auth-demo-note">Demo workspace · Human review matters</span>
@@ -91,7 +96,7 @@ export default function Page() {
   <div className="side-drawer-backdrop" id="drawerBackdrop" style={{"display": "none"}}></div>
   <aside className="side-drawer" id="sideDrawer" aria-label="Navigation">
     <div className="drawer-header">
-      <div className="drawer-brand">metrology. / workspace</div>
+      <div className="drawer-brand">NyayaLens / workspace</div>
       <button className="drawer-close" id="drawerCloseBtn" aria-label="Close navigation">&times;</button>
     </div>
     <div className="drawer-menu">
@@ -118,10 +123,10 @@ export default function Page() {
         <span></span><span></span><span></span>
       </button>
       <div className="nav-brand">
-        <div className="nav-logo"><ScanIcon /></div>
+        <div className="nav-logo"><NyayaLensMark /></div>
         <div className="brand-text">
-          <span className="product-wordmark">metrology<span>.</span></span>
-          <span className="agency" id="agencyTitleHeader">Department of Consumer Affairs</span>
+          <span className="product-wordmark">NyayaLens</span>
+          <span className="agency" lang="hi">न्याय की नज़र</span>
           <span className="sub">PCR 2011 Automated Inspection Gateway — Node ID: 26034</span>
         </div>
       </div>
