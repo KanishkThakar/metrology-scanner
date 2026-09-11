@@ -95,4 +95,4 @@ Fresh checks completed during migration:
 - Real iOS simulator sign-in, native file upload, successful scan, rule rendering and native PDF sharing preview.
 - PostgreSQL copy preserved 29 baseline records, JSON payloads and PDF access; new scan and sequence worked.
 
-Live Sarvam inference remains unverified because this project has no API key. Physical-device camera, GPS and microphone capture need a device permission test; simulator/API checks do not establish physical hardware behavior. Render deployment remains blocked on account connection. The existing demo login remains unsuitable for collecting real personal data without authenticated per-user access control.
+Live Sarvam inference remains unverified because this project has no API key. Physical-device camera, GPS and microphone capture need a device permission test; simulator/API checks do not establish physical hardware behavior. The hosted configuration uses Render's free tier; see `DEPLOYMENT.md` for deployment status and temporary-storage limits. The existing demo login remains unsuitable for collecting real personal data without authenticated per-user access control.

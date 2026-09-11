@@ -38,6 +38,15 @@ export function initializeScanner(configuredApiUrl = "") {
     link.href = API_BASE + new URL(link.href).pathname;
   });
 
+  const hostedPreview = window.location.protocol === "https:" && !configuredApiUrl;
+  if (hostedPreview) {
+    const notice = document.createElement("div");
+    notice.textContent = "Website preview — the OCR backend is not connected yet. Scanning is unavailable on this link.";
+    notice.style.cssText = "background:#fff3cd;color:#664d03;padding:16px;text-align:center;font-weight:600;position:relative;z-index:10000";
+    document.body.prepend(notice);
+    disposers.push(() => notice.remove());
+  }
+
   async function resolveActiveBackend() {
     const port = "8000";
     const host = window.location.hostname || "127.0.0.1";
@@ -48,40 +57,34 @@ export function initializeScanner(configuredApiUrl = "") {
       "http://localhost:" + port
     ];
 
-    if (window.location.protocol === "https:" && !configuredApiUrl) {
+    if (hostedPreview) {
       updateStatusBar("Website preview: hosted scanning is not connected yet.");
-      const notice = document.createElement("div");
-      notice.textContent = "Website preview — the OCR backend is not connected yet. Scanning is unavailable on this link.";
-      notice.style.cssText = "background:#fff3cd;color:#664d03;padding:16px;text-align:center;font-weight:600;position:relative;z-index:10000";
-      document.body.prepend(notice);
-      disposers.push(() => notice.remove());
-      return;
+      return false;
     }
     for (let i = 0; i < probeTargets.length; i++) {
       const url = probeTargets[i];
       try {
         const controller = new AbortController();
-        const timer = later(() => controller.abort(), 1200);
-        const res = await request(url + "/api/health", { method: "GET", signal: controller.signal });
-        clearTimeout(timer);
-        if (res.ok) {
+        const timer = later(() => controller.abort(), configuredApiUrl ? 90000 : 5000);
+        let res, health;
+        try {
+          res = await request(url + "/api/health", { method: "GET", signal: controller.signal });
+          health = await res.json();
+        } finally { clearTimeout(timer); timers.delete(timer); }
+        // Render's loading page can return HTTP 200 before the API is ready.
+        if (res.ok && health.status === "ONLINE" && health.ocr_engine) {
           API_BASE = url;
-          console.log("[NETWORK] Connected to active Legal Metrology Gateway:", API_BASE);
-          updateStatusBar("Gateway Connected: " + API_BASE);
-          return;
+          return true;
         }
-      } catch (err) {}
+      } catch (err) { if (lifetime.signal.aborted) return false; }
     }
-    console.warn("[NETWORK] Probing defaulted to:", API_BASE);
-    updateStatusBar("Scanner backend unavailable. Please try again later.");
+    return false;
   }
 
   function updateStatusBar(msg) {
     const el = document.getElementById("statusBar");
     if (el) el.textContent = msg;
   }
-
-  resolveActiveBackend();
 
   // -------------------------------------------------------------
   // 2. ADMINISTRATIVE GEOGRAPHY (28 States & 8 UTs)
@@ -1779,12 +1782,19 @@ export function initializeScanner(configuredApiUrl = "") {
     });
   }
 
+  let healthInFlight = false;
   async function checkBackendHealth() {
+    if (healthInFlight || scanning || lifetime.signal.aborted) return;
+    healthInFlight = true;
     const pill = document.getElementById("backendStatusPill");
+    if (!backendOnline && !hostedPreview) {
+      if (pill) pill.textContent = "◌ Backend: Connecting";
+      updateStatusBar("Connecting to scanner. The free server may take about a minute to wake up.");
+    }
     try {
-      const healthUrl = (API_BASE || window.location.origin || "http://127.0.0.1:8000") + "/api/v1/health";
-      const res = await request(healthUrl, { method: "GET" });
-      if (res.ok) {
+      if (await resolveActiveBackend()) {
+        if (lifetime.signal.aborted) return;
+        if (!backendOnline) updateStatusBar("Scanner connected. Ready to scan your photos.");
         backendOnline = true;
         if (scanButton && !scanning) scanButton.disabled = !selectedFiles.length;
         if (pill) {
@@ -1797,6 +1807,7 @@ export function initializeScanner(configuredApiUrl = "") {
         throw new Error("Backend responded with non-200");
       }
     } catch (e) {
+      if (lifetime.signal.aborted) return;
       backendOnline = false;
       if (scanButton) scanButton.disabled = true;
       if (pill) {
@@ -1805,14 +1816,16 @@ export function initializeScanner(configuredApiUrl = "") {
         pill.style.borderColor = "rgba(245, 158, 11, 0.3)";
         pill.style.background = "rgba(245, 158, 11, 0.12)";
       }
-    }
+      if (!hostedPreview) updateStatusBar("Scanner is still starting or unavailable. Retrying automatically; your selected photos are kept.");
+    } finally { healthInFlight = false; }
   }
 
   initTheme();
   populateGeography();
   updateLanguage("en");
   checkBackendHealth();
-  repeat(checkBackendHealth, 10000);
+  repeat(() => { if (!document.hidden) checkBackendHealth(); }, 10000);
+  listen(document, 'visibilitychange', () => { if (!document.hidden) checkBackendHealth(); });
 
   return dispose;
 }
