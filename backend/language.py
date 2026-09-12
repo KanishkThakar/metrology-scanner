@@ -4,8 +4,9 @@ import os
 from typing import Literal
 
 import httpx
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
+from provider_limits import provider_budget
 
 router = APIRouter(prefix='/api/language', tags=['Language and speech'])
 Language = Literal['en-IN', 'hi-IN', 'te-IN', 'ta-IN', 'kn-IN', 'ml-IN',
@@ -26,6 +27,7 @@ class SpeechRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
     text: str = Field(min_length=1, max_length=2500)
     language_code: Language
+    speaker: Literal['shubh','ritu','priya','aditya'] = 'shubh'
 
 
 def require_key():
@@ -65,7 +67,7 @@ def capabilities():
                        'Sarvam key not configured. Built-in language labels and scanning still work.'}
 
 
-@router.post('/translate')
+@router.post('/translate', dependencies=[Depends(provider_budget)])
 async def translate(body: TranslationRequest):
     if body.source_language_code == body.target_language_code:
         return {'translated_text': body.text, 'provider': 'identity', 'source_language_code': body.source_language_code}
@@ -80,13 +82,13 @@ async def translate(body: TranslationRequest):
     return {'translated_text': text, 'provider': 'Sarvam', 'source_language_code': body.source_language_code}
 
 
-@router.post('/speak')
+@router.post('/speak', dependencies=[Depends(provider_budget)])
 async def speak(body: SpeechRequest):
     if body.language_code not in SPEECH_LANGUAGES:
         raise HTTPException(422, detail='Speech output is not available in this language. Text translation is still supported.')
     result = await sarvam_request('/text-to-speech', json={
         'text': body.text, 'language_code': body.language_code, 'model': 'bulbul:v3',
-        'speaker': 'shubh', 'speech_sample_rate': 24000, 'output_audio_codec': 'wav',
+        'speaker': body.speaker, 'speech_sample_rate': 24000, 'output_audio_codec': 'wav',
     })
     audios = result.get('audios')
     try:
@@ -103,9 +105,11 @@ async def speak(body: SpeechRequest):
     return {'audios': audios, 'mime_type': 'audio/wav', 'provider': 'Sarvam'}
 
 
-@router.post('/transcribe')
-async def transcribe(file: UploadFile = File(...), language_code: Language = Form('en-IN')):
+@router.post('/transcribe', dependencies=[Depends(provider_budget)])
+async def transcribe(file: UploadFile = File(...), language_code: str = Form('en-IN')):
     require_key()
+    if language_code not in LANGUAGES + ['unknown']:
+        raise HTTPException(422, detail='Choose a supported speech language or automatic detection.')
     data = await file.read(4 * 1024 * 1024 + 1)
     if not data or len(data) > 4 * 1024 * 1024:
         raise HTTPException(413, detail='Record up to 30 seconds of audio, smaller than 4 MB.')

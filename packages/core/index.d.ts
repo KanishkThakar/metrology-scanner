@@ -8,6 +8,9 @@ export interface BarcodeReview { gtin:string; registry_gtin:string; registry_sou
 export interface BarcodeIdentity { inspection_id:number; evidence_sha256:string; barcodes:{gtin:string;format:string;photo_numbers:number[]}[]; label_photos:{photo_number:number;text:string}[]; reviews:BarcodeReview[]; lookup_url:string; access_mode:'manual_lookup'; api_connected:false; notice:string; decoder:string; }
 export interface Preset {id:string; title:string; category:string; pdp_area:number; image_url:string; highlight:string;}
 export interface Capabilities { configured:boolean; provider:string; translation_languages:string[]; speech_languages:string[]; message:string; }
+export interface VoiceCapabilities { configured:boolean; provider:string; model:string; speech_languages:string[]; voices:string[]; message:string; }
+export interface VoiceTurn { role:'user'|'assistant';content:string; }
+export interface VoiceReply {answer:string;language_code:string;provider:string;model:string;sources:{key:string;reference:string;status:string;value:string;explanation:string}[];inspection_id:number|null;evidence_sha256:string|null;reply_seconds:number;}
 export const MAX_PHOTOS: number;
 export const MAX_PHOTO_BYTES: number;
 export const MAX_TOTAL_BYTES: number;
@@ -30,6 +33,8 @@ export function createClient(baseUrl:string,fetcher?:typeof fetch): {
   chat(query:string):Promise<{answer:string}>;
   draft(form:FormData):Promise<{status:string;message:string;reference_id:string}>;
   translate(text:string,source:string,target:string):Promise<{translated_text:string}>;
-  speak(text:string,language:string):Promise<{audios:string[];mime_type:string}>;
+  speak(text:string,language:string,speaker?:string):Promise<{audios:string[];mime_type:string}>;
+  voiceCapabilities():Promise<VoiceCapabilities>;
+  voiceReply(body:{message:string;history?:VoiceTurn[];language_code?:string;inspection_id?:number|null}):Promise<VoiceReply>;
   transcribe(form:FormData):Promise<{transcript:string;language_code:string}>;
 };

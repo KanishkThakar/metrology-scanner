@@ -1239,7 +1239,7 @@ export function initializeScanner(configuredApiUrl = "") {
     listen(aiFab, "click", () => {
       aiChatWindow.style.display = (aiChatWindow.style.display === "none" || !aiChatWindow.style.display) ? "flex" : "none";
       document.getElementById('mobileAdvisorBtn')?.setAttribute('aria-expanded', String(aiChatWindow.style.display === 'flex'));
-      if (aiChatWindow.style.display === 'flex') document.getElementById('chatTextInput')?.focus({preventScroll: true});
+      if (aiChatWindow.style.display === 'flex') document.querySelector('[aria-label="Start speaking"]')?.focus({preventScroll: true});
     });
   }
   const mobileAdvisorBtn = document.getElementById('mobileAdvisorBtn');

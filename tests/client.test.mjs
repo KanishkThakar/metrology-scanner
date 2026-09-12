@@ -26,3 +26,13 @@ test('backend failures stay failures and retain useful messages', async () => {
   assert.throws(()=>createClient('https://api.example.test/api'));
   assert.throws(()=>createClient('https://secret@example.test'));
 });
+
+test('stopping a conversation aborts its provider request without a timeout message', async () => {
+  const cancelled = new AbortController();
+  const api = createClient('https://api.example.test',async(_url,options)=>new Promise((_resolve,reject)=>{
+    options.signal.addEventListener('abort',()=>reject(new DOMException('Cancelled','AbortError')),{once:true});
+  }));
+  const pending = api.request('/api/voice/reply',{signal:cancelled.signal});
+  cancelled.abort();
+  await assert.rejects(pending,error=>error.name==='AbortError'&&!error.message.includes('too long'));
+});

@@ -31,6 +31,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text as sql_text
 from barcode_identity import router as barcode_identity_router
+from voice import router as voice_router
 from language import router as language_router
 import cv2
 import numpy as np
@@ -91,6 +92,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.include_router(voice_router)
 app.include_router(language_router)
 app.include_router(barcode_identity_router)
 

@@ -14,6 +14,7 @@ import { useAudioPlayer, useAudioRecorder, useAudioRecorderState, AudioModule, R
 import { categories, createClient, languages, languageCode, validatePhotos, type Capabilities, type Inspection, type Preset, type ScanResult } from '@metrology/core';
 import catalog from '@metrology/core/catalog';
 import BarcodeIdentity from './BarcodeIdentity';
+import VoiceAssistant from './VoiceAssistant';
 
 const geography = catalog.indiaGeography as Record<string,string[]>;
 const dictionaries = catalog.i18n as Record<string,typeof catalog.i18n.en>;
@@ -49,6 +50,7 @@ function Selection({label,value,values,onChange}:{label:string;value:string;valu
 
 function MobileApp() {
   const [apiUrl,setApiUrl]=useState(initialApi);
+  const [advisorMode,setAdvisorMode]=useState('voice');
   const [apiDraft,setApiDraft]=useState(initialApi);
   const api=useMemo(()=>createClient(apiUrl),[apiUrl]);
   const [online,setOnline]=useState(false);
@@ -273,7 +275,9 @@ function MobileApp() {
             {translated?<TextInput multiline accessibilityLabel="Audit translation" value={translated} onChangeText={setTranslated} style={inputStyle}/>:null}
             <Button title="Read aloud" disabled={busy||!translated||!capabilities?.speech_languages.includes(languageCode(language))} onPress={()=>void readAloud()}/>
           </View>:<View style={[styles.panel,styles.emptyState,{backgroundColor:color.panel,borderColor:color.border}]}><Text style={styles.emptyIcon}>◎</Text><Text style={[styles.subtitle,textStyle]}>Your label story starts here.</Text><Text style={[styles.helper,{color:color.muted,textAlign:'center'}]}>Add photos and run a scan to see your review.</Text><Button title="Start a scan" onPress={()=>setTab('Scanner')}/></View>)}
-        {tab==='Advisor'&&<View style={[styles.panel,{backgroundColor:color.panel}]}>
+        {tab==='Advisor'&&<View style={styles.row}><Button title="Talk with AI" disabled={busy||recording.isRecording} secondary={advisorMode!=='voice'} onPress={()=>{player.pause();setAdvisorMode('voice');}}/><Button title="Quick FAQ" secondary={advisorMode!=='faq'} onPress={()=>setAdvisorMode('faq')}/></View>}
+        {tab==='Advisor'&&advisorMode==='voice'&&<VoiceAssistant api={api} inspectionId={result?.inspection_id} color={color}/>}
+        {tab==='Advisor'&&advisorMode==='faq'&&<View style={[styles.panel,{backgroundColor:color.panel}]}>
           <Text style={[styles.subtitle,textStyle]}>Packaging FAQ Advisor</Text><Text style={textStyle}>{capabilities?.message||'Text FAQ remains available. Sarvam speech is not configured.'}</Text>
           <View style={styles.row}>{['Cooling charges above MRP','Rule 6(11) USP','Section 36 penalties','Consumer Helpline'].map(q=><Button key={q} title={q} onPress={()=>setQuery(q)}/>)}</View>
           {messages.map((m,i)=><View style={styles.rule} key={i}><Text style={[styles.label,textStyle]}>{m.who}</Text><Text selectable style={textStyle}>{m.text}</Text></View>)}

@@ -1,5 +1,6 @@
 import ScannerRuntime from '../components/ScannerRuntime';
 import LanguageTools from '../components/LanguageTools';
+import VoiceAssistant from '../components/VoiceAssistant';
 import BarcodeIdentity from '../components/BarcodeIdentity';
 
 function ScanIcon() {
@@ -441,9 +442,10 @@ export default function Page() {
   <div className="ai-widget-container">
     <div className="ai-chat-window" id="aiChatWindow" style={{"display": "none"}}>
       <div className="chat-header">
-        <span>📖 Packaging FAQ Advisor</span>
+        <span>NyayaLens · Your voice companion</span>
         <button className="chat-close" id="chatCloseBtn" aria-label="Close advisor">&times;</button>
       </div>
+      <VoiceAssistant apiUrl={apiUrl}>
       <div className="chat-chips-bar" id="chatChipsBar">
         <button className="chat-chip" data-query="Can shopkeeper charge extra cooling charges htmlFor chilled soft drinks above MRP?">❄️ Cooling Charges</button>
         <button className="chat-chip" data-query="Is dual pricing allowed at airports or multiplexes?">✈️ Airport Pricing</button>
@@ -457,8 +459,9 @@ export default function Page() {
         <input type="text" id="chatTextInput" aria-label="Message to packaging advisor" placeholder="Ask about rules, overcharging, stickers, Section 36..." />
         <button id="chatSendBtn" className="chat-btn">➤</button>
       </div>
+      </VoiceAssistant>
     </div>
-    <button className="ai-fab" id="aiFab">📖 Packaging Advisor</button>
+    <button className="ai-fab" id="aiFab">Talk to NyayaLens</button>
   </div>
 
 

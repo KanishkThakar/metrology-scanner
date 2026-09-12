@@ -40,6 +40,7 @@ test('Expo app preserves scanning, results, advisor, settings and officer histor
   await expect(page.getByRole('textbox',{name:'Recipient email'})).toBeVisible();
   await page.getByRole('button',{name:'Close',exact:true}).click();
   await page.getByRole('tab',{name:'Advisor',exact:true}).click();
+  await page.getByRole('button',{name:'Quick FAQ',exact:true}).click();
   await page.getByRole('textbox',{name:'Ask the packaging advisor'}).fill('cooling charges above MRP');
   await page.getByRole('button',{name:'Send',exact:true}).click();
   await expect(page.getByText('Packaging FAQ',{exact:true})).toBeVisible();

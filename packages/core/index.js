@@ -23,6 +23,9 @@ export function createClient(baseUrl, fetcher = globalThis.fetch) {
   const url = (path) => base + '/' + path.replace(/^\/+/, '');
   async function request(path, options = {}, timeout = 20000) {
     const controller = new AbortController();
+    const cancel = () => controller.abort();
+    options.signal?.addEventListener('abort', cancel, {once:true});
+    if (options.signal?.aborted) controller.abort();
     const timer = setTimeout(() => controller.abort(), timeout);
     try {
       const response = await fetcher(url(path), { ...options, signal: controller.signal });
@@ -33,9 +36,9 @@ export function createClient(baseUrl, fetcher = globalThis.fetch) {
       }
       return data;
     } catch (error) {
-      if (error.name === 'AbortError') throw new Error('The backend took too long. Check the connection and try again.');
+      if (error.name === 'AbortError' && !options.signal?.aborted) throw new Error('The backend took too long. Check the connection and try again.');
       throw error;
-    } finally { clearTimeout(timer); }
+    } finally { clearTimeout(timer); options.signal?.removeEventListener('abort',cancel); }
   }
   const json = (data) => ({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   return {
@@ -52,7 +55,9 @@ export function createClient(baseUrl, fetcher = globalThis.fetch) {
     chat: query => request('/api/advisor/chat',json({query})),
     draft: form => request('/api/complaints/dispatch',{method:'POST',body:form}),
     translate: (text, source, target) => request('/api/language/translate',json({text,source_language_code:languageCode(source),target_language_code:languageCode(target)}),60000),
-    speak: (text, language) => request('/api/language/speak',json({text,language_code:languageCode(language)}),60000),
+    speak: (text, language, speaker = 'shubh') => request('/api/language/speak',json({text,language_code:languageCode(language),speaker}),60000),
+    voiceCapabilities: () => request('/api/voice/capabilities'),
+    voiceReply: body => request('/api/voice/reply',json(body),60000),
     transcribe: form => request('/api/language/transcribe',{method:'POST',body:form},60000),
   };
 }

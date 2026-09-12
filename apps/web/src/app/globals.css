@@ -1320,3 +1320,61 @@ body:has(#roleGatewayModal[style*="flex"]), body:has(.side-drawer.open), body:ha
 .barcode-status { color:var(--gov-blue); font-size:12px; font-weight:700; }
 .barcode-identity pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.65; margin:8px 0; max-height:240px; overflow:auto; background:var(--bg-surface-elevated); padding:12px; border-radius:8px; }
 @media(max-width:700px) { .barcode-identity { padding:18px 14px; gap:16px; } .barcode-title { gap:12px; } .barcode-title h3 { font-size:20px; } .barcode-review { padding:14px; } .barcode-actions>* { flex:1 1 140px; } }
+
+/* Sarvam conversation: a quiet, responsive space with explicit microphone state. */
+.ai-chat-window { width:440px; height:min(760px,calc(100dvh - 132px)); border-radius:24px; box-shadow:0 24px 80px #18392c26; }
+.chat-header { flex-shrink:0; min-height:52px; padding:12px 18px; }
+.chat-close { min-width:40px; min-height:40px; }
+.voice-workspace,.voice-tab-panel,.voice-faq,.voice-conversation { display:flex; flex-direction:column; flex:1; min-height:0; }
+.voice-tab-panel[hidden],.voice-faq[hidden] { display:none!important; }
+.voice-tabs { display:flex; margin:10px 18px 0; padding:4px; border-radius:12px; background:var(--bg-surface-elevated); flex-shrink:0; }
+.voice-tabs button { flex:1; min-height:40px; border:0; border-radius:9px; background:transparent; color:var(--text-muted); font:inherit; font-size:12px; font-weight:650; }
+.voice-tabs button[aria-selected=true] { background:var(--bg-surface); color:var(--text-pure); box-shadow:0 2px 8px #18392c0c; }
+.voice-scroll { overflow-y:auto; overscroll-behavior:contain; padding:20px 20px 12px; flex:1; min-height:0; }
+.voice-hero { text-align:center; padding:2px 0 18px; }
+.voice-hero .section-kicker { font-size:8px; letter-spacing:1.8px; }
+.voice-hero h3 { font-size:24px; font-weight:550; letter-spacing:-.8px; line-height:1.25; margin:10px 0 8px; color:var(--text-pure); }
+.voice-hero p { font-size:12px; line-height:1.5; color:var(--text-muted); margin:0; }
+.voice-orb { width:76px; height:76px; position:relative; margin:0 auto 16px; border:1px solid #8fbaaa50; border-radius:50%; background:radial-gradient(circle at 35% 28%,#b4e6d4,#43866e 65%,#18392c); box-shadow:inset -8px -5px 18px #18392c30,0 8px 32px #43866e20; display:flex; align-items:center; justify-content:center; gap:5px; transform:scale(calc(1 + var(--voice-level)*.12)); transition:transform .12s; }
+.voice-orb span { width:4px; height:24px; border-radius:5px; background:#eefcf5; opacity:.9; }
+.voice-orb span:nth-child(2) { height:38px; }
+.voice-orb i { position:absolute; inset:-7px; border:1px solid #8fbaaa40; border-radius:50%; }
+.is-listening .voice-orb i,.is-speaking .voice-orb i { animation:voice-breathe 1.8s ease-in-out infinite; }
+.is-speaking .voice-orb span { animation:voice-wave .7s ease-in-out infinite alternate; }
+.is-speaking .voice-orb span:nth-child(2) { animation-delay:.2s; }
+.is-thinking .voice-orb,.is-transcribing .voice-orb,.is-preparing .voice-orb { animation:voice-breathe 1.7s ease-in-out infinite; }
+@keyframes voice-breathe { 50% { transform:scale(1.08); opacity:.7; } }
+@keyframes voice-wave { to { height:12px; } }
+.voice-options { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:10px; }
+.voice-options label { font-size:10px; font-weight:650; color:var(--text-muted); }
+.voice-options select { display:block; width:100%; min-width:0; min-height:44px; margin-top:5px; padding:8px; border:1px solid var(--border-subtle); border-radius:10px; background:var(--bg-surface-elevated); color:var(--text-main); font:inherit; font-size:12px; text-overflow:ellipsis; }
+.voice-check { display:grid; grid-template-columns:18px 1fr; gap:3px 9px; margin:14px 0; color:var(--text-main); font-size:12px; cursor:pointer; }
+.voice-check input { grid-row:span 2; width:17px; height:17px; accent-color:var(--gov-blue); }
+.voice-check span { grid-column:2; font-size:10px; color:var(--text-muted); line-height:1.5; }
+.voice-transcript { display:grid; gap:12px; }
+.voice-message { border:1px solid var(--border-subtle); border-radius:14px 14px 14px 3px; padding:12px; overflow-wrap:anywhere; }
+.voice-message.user { margin-left:24px; background:var(--bg-surface-elevated); border-radius:14px 14px 3px 14px; }
+.voice-message strong { font-size:10px; color:var(--text-muted); }
+.voice-message p { white-space:pre-wrap; font-size:13px; line-height:1.65; margin:5px 0 0; }
+.voice-message details { margin-top:10px; border-top:1px solid var(--border-subtle); padding-top:8px; font-size:11px; }
+.voice-message small { display:block; line-height:1.6; }
+.voice-prompts { display:grid; gap:8px; }
+.voice-prompts button { text-align:left; background:transparent; border:1px solid var(--border-subtle); border-radius:10px; color:var(--text-main); padding:10px 12px; min-height:44px; font:inherit; font-size:12px; }
+.voice-controls { border-top:1px solid var(--border-subtle); padding:12px 18px 14px; flex-shrink:0; background:var(--bg-surface); }
+.voice-call-actions { display:flex; align-items:center; gap:8px; }
+.voice-mic { flex:1; min-height:46px; display:flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:24px; background:var(--gov-blue); color:white; font:inherit; font-size:13px; font-weight:650; }
+.voice-mic svg { width:19px; height:22px; }
+.voice-clear { background:transparent; border:1px solid var(--border-subtle); color:var(--text-muted); border-radius:50%; min-width:44px; min-height:44px; font-size:22px; }
+.voice-compose { display:flex; align-items:center; margin-top:10px; border:1px solid var(--border-subtle); border-radius:14px; padding:4px; }
+.voice-compose input { min-width:0; flex:1; background:transparent; color:var(--text-main); border:0; padding:10px; font:inherit; font-size:16px; }
+.voice-compose button { width:40px; height:40px; border:0; border-radius:10px; background:var(--bg-surface-elevated); color:var(--gov-blue); font-size:24px; }
+.voice-privacy { display:block; color:var(--text-muted); font-size:9px; line-height:1.5; margin-top:10px; }
+.voice-conversation button:disabled { opacity:.45; cursor:not-allowed; }
+.voice-conversation button:focus-visible,.voice-tabs button:focus-visible { outline:2px solid var(--gov-blue); outline-offset:3px; }
+@media(max-width:700px) {
+ .ai-chat-window { width:100%; height:calc(100dvh - 155px); max-height:calc(100dvh - 155px); border-radius:22px; }
+ .voice-scroll { padding:16px 16px 12px; }
+ .voice-hero h3 { font-size:23px; }
+ .voice-options select { font-size:16px; }
+ .voice-controls { padding:10px 14px 12px; }
+}
