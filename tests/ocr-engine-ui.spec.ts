@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 const web = process.env.TEST_WEB_URL || 'http://127.0.0.1:3001';
 // One generated pixel is enough for upload/transport tests, never OCR accuracy.
 const image = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/Z1sAAAAASUVORK5CYII=',
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNg+A8AAQIBAEK+vGgAAAAASUVORK5CYII=',
   'base64',
 );
 const modes = ['paddleocr', 'tesseract', 'hybrid'];
