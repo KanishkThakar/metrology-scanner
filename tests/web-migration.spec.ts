@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
-import { existsSync } from 'node:fs';
+import { coffeeFixturePath } from './helpers/coffee-fixture.cjs';
 import { execFileSync } from 'node:child_process';
 import catalog from '../packages/core/catalog.json';
 const base=process.env.TEST_WEB_URL||'http://127.0.0.1:3001';
 const api=process.env.TEST_API_URL||'http://127.0.0.1:8011';
 const errors:string[]=[];
+const coffeePath=coffeeFixturePath();
 
 test('existing web workflows survive the Next.js migration',async({page,request})=>{
   test.setTimeout(180000);
@@ -58,8 +59,7 @@ test('existing web workflows survive the Next.js migration',async({page,request}
   for(const id of ['exportCsvBtn','exportJsonBtn']){
     const download=page.waitForEvent('download');await page.locator('#'+id).click();expect((await download).suggestedFilename()).toMatch(/\.(csv|json)$/);
   }
-  const coffeePath=process.env.OCR_COFFEE_IMAGE;
-  if(coffeePath&&existsSync(coffeePath)){
+  if(coffeePath){
   await page.locator('#fileInput').setInputFiles(path.resolve(coffeePath));
   // File inputs append by design; remove the previous two sides before the coffee scan.
   await page.locator('#photoList button').first().click();
@@ -74,3 +74,4 @@ test('existing web workflows survive the Next.js migration',async({page,request}
   }
   expect(errors).toEqual([]);
 });
+

@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test';
-import path from 'node:path';
 import { writeFileSync } from 'node:fs';
+import { coffeeFixturePath } from './helpers/coffee-fixture.cjs';
 const web = process.env.TEST_WEB_URL || 'http://127.0.0.1:3001';
 const api = process.env.TEST_API_URL || 'http://127.0.0.1:8000';
 test.use({actionTimeout: 15000});
 
-test('all three OCR choices execute and preserve the 99 rupee photo', async ({ page, request }) => {
+const coffeeImage = coffeeFixturePath();
+test.skip(!coffeeImage, 'Set OCR_COFFEE_IMAGE to the private reference ₹99 coffee-label photo; see TESTING.md.');
+
+test('all three OCR choices execute and preserve the 99 rupee photo', async ({ page, request }, testInfo) => {
   test.setTimeout(240000);
   const errors: string[] = [];
   const results: unknown[] = [];
@@ -24,7 +27,7 @@ test('all three OCR choices execute and preserve the 99 rupee photo', async ({ p
   await page.locator('#citizenIdentityInput').fill('ocr-modes-test@example.com');
   await page.locator('#citizenLoginForm button').click();
   await expect(page.locator('#roleGatewayModal')).toBeHidden();
-  await page.locator('#fileInput').setInputFiles(path.resolve('work/migration-coffee.jpg'));
+  await page.locator('#fileInput').setInputFiles(coffeeImage!);
   for (const mode of ['paddleocr', 'tesseract', 'hybrid']) {
     await page.locator(`[data-ocr-engine="${mode}"]`).click();
     const response = page.waitForResponse(r => r.url() === api + '/api/scan' && r.request().method() === 'POST');
@@ -44,7 +47,8 @@ test('all three OCR choices execute and preserve the 99 rupee photo', async ({ p
     results.push({mode, seconds: scan.analysis_seconds, mrp: scan.rules.mrp.detected_value, status: scan.rules.mrp.status});
   }
   await page.locator('#guideStepUpload').scrollIntoViewIfNeeded();
-  await page.screenshot({path: 'work/ocr-engine-choice.png', fullPage: true});
-  writeFileSync('work/ocr-engine-choice-results.json', JSON.stringify({web, api, results, errors}, null, 2));
+  await page.screenshot({path: testInfo.outputPath('ocr-engine-choice.png'), fullPage: true});
+  writeFileSync(testInfo.outputPath('ocr-engine-choice-results.json'), JSON.stringify({web, api, results, errors}, null, 2));
   expect(errors).toEqual([]);
 });
+
