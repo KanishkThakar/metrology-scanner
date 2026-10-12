@@ -17,6 +17,11 @@ The current application uses Next.js 16 for web, Expo SDK 57 / React Native for 
 
 See [STACK_MIGRATION.md](STACK_MIGRATION.md) for architecture, setup, feature parity, database migration and verification. Existing scan data stays in `backend/inspections.db`, `backend/uploads` and `backend/reports` unless a persistent data directory is configured. The previous frontend remains in `FRONTEND` for rollback.
 
+For clean-checkout OCR UI tests that need no private photos or running backend,
+see [TESTING.md](TESTING.md). It separates mocked browser/transport coverage from
+the optional real ₹99 reference-photo regression and includes a short technical
+walkthrough and explicit verification limits.
+
 ```sh
 npm ci
 uv pip install --python .venv/bin/python -r backend/requirements.txt
@@ -263,3 +268,4 @@ Scanning retains up to a 2400-pixel image edge, checks quarter-turn orientation,
 Conflicting or weak price readings return `REVIEW`; dependent unit-price calculations are withheld. The UI exposes the individual price readings. Different prices across photos also require review. English OCR is not a guarantee of correct recognition on every label; unclear fields still need a close-up or human verification.
 
 Run the OCR regressions with `.venv/bin/python -m unittest discover -s backend -p 'test_*ocr.py'` and `.venv/bin/python -m unittest discover -s backend -p test_tesseract.py`.
+

@@ -15,7 +15,9 @@
     "start": "npm run start --workspace @metrology/web --",
     "mobile": "npm run start --workspace @metrology/mobile --",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test:contracts": "node --test tests/client.test.mjs",
+    "test:contracts": "node --test tests/*.test.mjs",
+    "test:ocr-ui": "playwright test --config playwright.ocr-ui.config.ts",
+    "test:ocr-reference": "playwright test tests/ocr-engine-choice.spec.ts",
     "api": ".venv/bin/python scripts/run-api.py",
     "test:web": "playwright test"
   },
@@ -23,3 +25,4 @@
     "@playwright/test": "^1.63.0"
   }
 }
+
