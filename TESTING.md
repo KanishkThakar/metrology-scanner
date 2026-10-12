@@ -32,7 +32,10 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:ocr-ui
 The default remains Playwright's downloaded Chromium. Record the browser version
 when using a system executable; it may differ from Playwright's pinned version.
 
-### What the focused checks cover
+### Assertions defined by the focused checks
+
+These are assertions implemented in the test files. Their presence and successful
+test discovery do not establish that the browser test bodies have passed.
 
 - Shared-client multipart contracts, upload limits, failure messages and aborts.
 - Optional reference-photo path validation, including missing files and directories.
@@ -96,6 +99,34 @@ this focused suite.
 all installed workspaces. The focused web-only installation above does not
 install or verify the Expo mobile workspace.
 
+## Recorded verification status
+
+Status reviewed on 2026-10-12 for commit
+`f8c20bb0d96a5a14f9da0c46f5e2972c605297c8` in
+[draft PR #1](https://github.com/KanishkThakar/metrology-scanner/pull/1).
+This is a summary of recorded results, not a new test run:
+
+- **Reported passed:** 8 contract tests, web typecheck, and the Next.js production
+  build. These checks do not execute the two focused browser test bodies.
+- **Discovered, execution blocked:** 2 focused browser tests; 0 browser test bodies
+  completed and 0 browser tests passed. Chromium setup/launch failed before the
+  assertions ran. Discovery is not a browser pass.
+- **Expected skip:** the private-photo reference regression with
+  `OCR_COFFEE_IMAGE` unset. A skipped regression is not an OCR/PDF pass.
+- **Not run:** real reference-photo OCR/PDF integration, wider backend/mobile
+  integration suites, mobile typecheck, or physical-device tests for this PR.
+- **Not established:** OCR accuracy, legal correctness, a working public
+  end-to-end demo, production readiness, or personal proficiency.
+
+Earlier migration results elsewhere in the repository are historical claims,
+not a fresh verification of this commit. Keep PR #1 in draft until the focused
+browser suite completes in an authorized environment with working Chromium.
+
+For the next actual run, record the commit, date, Node/browser versions, exact
+commands, exit codes, and passed/failed/skipped counts with the resulting log.
+Keep blocked and unrun checks explicit. Do not turn a successful build, discovered
+test, skipped test, or simulated response into an integration-test pass.
+
 ## Short technical walkthrough
 
 1. Show the old hardcoded private-photo dependency and explain why a clean clone
@@ -105,11 +136,33 @@ install or verify the Expo mobile workspace.
    bytes. Explain the controlled response gate used to verify disabled controls.
 4. Demonstrate the failure/retry case and the explicit skip versus invalid-path
    failure for the private reference test.
-5. State the boundary clearly: reproducible UI/transport coverage is established
-   separately from real OCR, reporting, database and legal review.
+5. State the actual result: the suite defines reproducible UI/transport checks;
+   browser coverage is verified only after a recorded successful execution. Real
+   OCR, reporting, database and legal review require separate verification.
 
-A supportable portfolio description is: "Separated mocked OCR UI contract tests
-from a private-photo integration regression; added multipart payload, selection
-persistence, and failure/retry coverage with explicit fixture validation."
+A source-level description of the change is: "Separated mocked OCR UI contract
+tests from a private-photo integration regression; added multipart payload,
+selection-persistence, and failure/retry assertions with explicit fixture
+validation. Browser execution remains unverified."
 Do not convert this work into an OCR accuracy, legal certification, adoption, or
 performance claim.
+
+
+## AI assistance and contribution boundaries
+
+This verification-status and contribution-boundary documentation update was
+prepared with AI assistance from repository source and recorded test results.
+It adds no new runtime verification.
+
+The commits in PR #1 are attributed to the `KanishkThakar` account. Account
+attribution alone does not establish sole human authorship, independent skill,
+or the extent of AI assistance in earlier implementation. Before presenting the
+work as a personal portfolio contribution, accurately distinguish the candidate's
+own design, implementation, review and testing from any AI-assisted work. Those
+personal contribution details are not established by this document.
+
+Synthetic inputs and intercepted responses demonstrate intended test behavior,
+not real product scans or user adoption. The generated one-pixel PNG, simulated
+OCR response, and example.com test identity are fixtures; the optional private
+reference photo must remain separate. Do not derive a new experience, proficiency,
+accuracy, performance, or adoption claim from this documentation change.
